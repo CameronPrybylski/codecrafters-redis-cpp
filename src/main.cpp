@@ -51,18 +51,19 @@ int main(int argc, char **argv) {
   std::cout << "Logs from your program will appear here!\n";
 
   // Uncomment the code below to pass the first stage
-  // 
   int client = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
   if(client > -1)
   {
     std::cout << "Client connected\n";
-    // 
-    char buffer[64] = {};
-    ssize_t bytesReceived = recv(client, buffer, sizeof(buffer) - 1, 0);
-    if(bytesReceived > 0)
+    while(true)
     {
-      char pong[] = "+PONG\r\n";
-      send(client, pong, strlen(pong), 0);
+      char buffer[64] = {};
+      ssize_t bytesReceived = recv(client, buffer, sizeof(buffer) - 1, 0);
+      if(bytesReceived > 0)
+      {
+        char pong[] = "+PONG\r\n";
+        send(client, pong, strlen(pong), 0);
+      }
     }
   }
   close(server_fd);
