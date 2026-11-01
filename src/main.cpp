@@ -52,9 +52,19 @@ int main(int argc, char **argv) {
 
   // Uncomment the code below to pass the first stage
   // 
-  accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
-  std::cout << "Client connected\n";
-  // 
+  int client = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+  if(client > -1)
+  {
+    std::cout << "Client connected\n";
+    // 
+    char buffer[64] = {};
+    ssize_t bytesReceived = recv(client, buffer, sizeof(buffer) - 1, 0);
+    if(bytesReceived > 0)
+    {
+      char pong[] = "+PONG\r\n";
+      send(client, pong, strlen(pong), 0);
+    }
+  }
   close(server_fd);
 
   return 0;
