@@ -7,6 +7,61 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <poll.h>
+#include <thread>
+
+#include <vector>
+
+bool IsClientAvailable(int clientSocket)
+{
+  struct pollfd pfd;
+  pfd.fd = clientSocket;       // The socket you want to check
+  pfd.events = POLLIN;      // Alert me when data is available to read
+  pfd.revents = 0;          // Clear returned events
+
+  // poll returns: > 0 if data is ready, 0 on timeout, -1 on error
+  int timeout_ms = 1;
+  int ret = poll(&pfd, 1, timeout_ms);
+  
+  if (ret > 0 && (pfd.revents & POLLIN)) {
+      return true; 
+  }
+  return false;
+}
+
+int AcceptClient(int server_fd)
+{
+  /*
+  struct sockaddr_in client_addr;
+  int client_addr_len = sizeof(client_addr);
+  std::cout << "Waiting for a client to connect...\n";
+
+  // You can use print statements as follows for debugging, they'll be visible when running tests.
+  std::cout << "Logs from your program will appear here!\n";
+
+  // Uncomment the code below to pass the first stage
+  int client = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+  */
+  int client = accept(server_fd, nullptr, nullptr);
+  return client;
+}
+
+void HandleClient(int client_fd)
+{
+  while(true)
+  {
+    char buffer[64] = {};
+    ssize_t bytesReceived = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+    if(bytesReceived <= 0)
+    {
+      break;
+    }
+    char pong[] = "+PONG\r\n";
+    send(client_fd, pong, strlen(pong), 0);
+  }
+  close(client_fd);
+}
+
 
 int main(int argc, char **argv) {
   // Flush after every std::cout / std::cerr
@@ -43,29 +98,15 @@ int main(int argc, char **argv) {
     return 1;
   }
   
-  struct sockaddr_in client_addr;
-  int client_addr_len = sizeof(client_addr);
-  std::cout << "Waiting for a client to connect...\n";
-
-  // You can use print statements as follows for debugging, they'll be visible when running tests.
-  std::cout << "Logs from your program will appear here!\n";
-
-  // Uncomment the code below to pass the first stage
-  int client = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
-  if(client > -1)
+  while(true)
   {
-    std::cout << "Client connected\n";
-    while(true)
+    int client = AcceptClient(server_fd);
+    if(client > -1)
     {
-      char buffer[64] = {};
-      ssize_t bytesReceived = recv(client, buffer, sizeof(buffer) - 1, 0);
-      if(bytesReceived > 0)
-      {
-        char pong[] = "+PONG\r\n";
-        send(client, pong, strlen(pong), 0);
-      }
+      std::thread(HandleClient, client).detach();
     }
   }
+
   close(server_fd);
 
   return 0;
