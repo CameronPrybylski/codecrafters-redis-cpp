@@ -20,6 +20,7 @@ add_executable(redis ${SOURCE_FILES})
 
 target_include_directories(redis PRIVATE
     ${ASIO_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 #target_link_libraries(redis PRIVATE asio asio::asio)
