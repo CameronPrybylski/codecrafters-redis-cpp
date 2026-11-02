@@ -11,6 +11,7 @@
 #include <thread>
 
 #include <vector>
+#include <string>
 
 bool IsClientAvailable(int clientSocket)
 {
@@ -46,8 +47,93 @@ int AcceptClient(int server_fd)
   return client;
 }
 
+std::string HandleRespArr(std::vector<std::string>& respArr, int client_fd)
+{
+  std::string cmd = respArr[0];
+  std::string response = "";
+  if(cmd == "ECHO")
+  {
+    return "$" + std::to_string(respArr[1].size()) + "\r\n" + respArr[1] + "\r\n";
+  }
+  else
+  {
+    return "+PONG\r\n";
+  }
+}
+
+void AddToRespArr(std::string& messageStream, std::vector<std::string>& respArr)
+{
+
+  size_t end = messageStream.find("\r\n");
+  while(end != std::string::npos)
+  {
+    if(end == std::string::npos)
+    {
+      return;
+    }
+    std::string element = messageStream.substr(0, end);
+
+    if(element.find("*") != std::string::npos)
+    {
+
+    }
+    else if(element.find("$") != std::string::npos)
+    {
+
+    }
+    else if(element.find(":") != std::string::npos)
+    {
+
+    }
+    else
+    {
+      respArr.push_back(element);
+      //messageStream = messageStream.substr(element.length(), messageStream.length());
+    }
+    messageStream = messageStream.substr(element.length() + 2, messageStream.length());
+    end = messageStream.find("\r\n");
+  }
+}
+
+int NumberOfElements(std::string& messageStream)
+{
+  size_t end = messageStream.find("\r\n");
+  std::string strNum = "";
+  for(int i = 1; i < end; ++i)
+  {
+    strNum += messageStream[i];
+  }
+  messageStream = messageStream.substr(end + 2, messageStream.length());
+  return stoi(strNum);
+}
+
+std::string HandleMessageStream(std::string& messageStream, int& numOfElements, std::vector<std::string>& respArr, int client_fd)
+{
+  if(messageStream.empty())
+  {
+    return "";
+  }
+  size_t start = messageStream.find("*");
+  if(start == 0 && numOfElements == 0)
+  {
+    numOfElements = NumberOfElements(messageStream);
+  }
+  if(respArr.size() < numOfElements)
+  {
+    AddToRespArr(messageStream, respArr);
+  }
+  if(respArr.size() == numOfElements)
+  {
+    return HandleRespArr(respArr, client_fd);
+  }
+  return "";
+}
+
 void HandleClient(int client_fd)
 {
+  std::string messageStream;
+  std::vector<std::string> respArr;
+  int numOfElements = 0;
   while(true)
   {
     char buffer[64] = {};
@@ -56,8 +142,17 @@ void HandleClient(int client_fd)
     {
       break;
     }
-    char pong[] = "+PONG\r\n";
-    send(client_fd, pong, strlen(pong), 0);
+    std::string msg(buffer);
+    messageStream += msg;
+    //HandleMessageStream(messageStream, numOfElements, respArr);    
+    std::string response = HandleMessageStream(messageStream, numOfElements, respArr, client_fd);
+    if(!response.empty())
+    {
+      const char* chResp = response.c_str();
+      send(client_fd, chResp, strlen(chResp), 0);
+    }
+    //char pong[] = "+PONG\r\n";
+    //send(client_fd, pong, strlen(pong), 0);
   }
   close(client_fd);
 }
@@ -97,7 +192,7 @@ int main(int argc, char **argv) {
     std::cerr << "listen failed\n";
     return 1;
   }
-  
+
   while(true)
   {
     int client = AcceptClient(server_fd);
