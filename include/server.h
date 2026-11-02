@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <chrono>
 
 class Server {
 
@@ -23,7 +24,12 @@ public:
     void AddToRespArr(std::string& messageStream, std::vector<std::string>& respArr);
     std::string HandleRespArr(std::vector<std::string>& respArr, int client_fd);
 
+    void HandleResponse(int client_fd, std::string response);
+    bool CheckExpired(std::string key);
+
 private:
     int server_fd;
     std::map<std::string, std::string> keyVals;
+    std::map<std::string, int> keyExpires;
+    std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
 };

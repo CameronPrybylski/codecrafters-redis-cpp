@@ -109,11 +109,8 @@ void Server::HandleClient(int client_fd)
     std::string response = HandleMessageStream(messageStream, numOfElements, respArr, client_fd);
     if(!response.empty())
     {
-      const char* chResp = response.c_str();
-      send(client_fd, chResp, strlen(chResp), 0);
+        HandleResponse(client_fd, response);  
     }
-    //char pong[] = "+PONG\r\n";
-    //send(client_fd, pong, strlen(pong), 0);
   }
   close(client_fd);
 }
@@ -199,18 +196,61 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   else if(cmd == "SET")
   {
     keyVals[respArr[1]] = respArr[2];
+    std::cout << respArr.size() << std::endl;
+    if(respArr.size() > 3)
+    {
+        int time = stoi(respArr[4]);
+        if(respArr[3] == "EX")
+        {
+            time *= 1000;
+        }
+        keyExpires[respArr[1]] = time;
+        keyTimes[respArr[1]] = std::chrono::system_clock::now();
+    }
     return "+OK\r\n";
   }
   else if(cmd == "GET")
   {
     std::string key = respArr[1];
-    std::cout << key << std::endl;
-    std::string value = keyVals[key];
-    std::string resp = "$" + std::to_string(value.length()) + "\r\n" + value + "\r\n";
-    return resp;
+    if(keyVals.contains(key) && !CheckExpired(key))
+    {
+        std::string value = keyVals[key];
+        std::string resp = "$" + std::to_string(value.length()) + "\r\n" + value + "\r\n";
+        return resp;
+    }
+    else
+    {
+        return "$-1\r\n";
+    }
   }
   else
   {
     return "+PONG\r\n";
   }
+}
+
+void Server::HandleResponse(int client_fd, std::string response)
+{
+    const char* chResp = response.c_str();
+    send(client_fd, chResp, strlen(chResp), 0);
+}
+
+bool Server::CheckExpired(std::string key)
+{
+    if(keyTimes.contains(key))
+    {
+        auto time = keyTimes[key];
+        auto now = std::chrono::system_clock::now();
+        int timeToExpire = keyExpires[key];
+        std::chrono::duration<double, std::milli> ms_double = now - time;
+        std::cout << ms_double << " " << std::chrono::milliseconds(timeToExpire) << std::endl;
+        if(ms_double > std::chrono::milliseconds(timeToExpire))
+        {
+            keyVals.erase(key);
+            keyExpires.erase(key);
+            keyTimes.erase(key);
+            return true;
+        }
+    }
+    return false;
 }
