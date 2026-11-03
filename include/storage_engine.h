@@ -18,6 +18,7 @@ public:
     void AddToList(std::string listKey, std::string entry, bool right);
     void AddEntriesToList(std::string listKey, std::vector<std::string>& entries, bool right);
     std::string RemoveFromList(std::string listKey, bool right);
+    std::vector<std::string> RemoveEntriesFromList(std::string listKey, int numOfEntries, bool right);
 
     int ElementsInList(std::string listKey);
     std::deque<std::string> GetList(std::string listKey);

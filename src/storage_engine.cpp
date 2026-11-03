@@ -57,7 +57,7 @@ void StorageEngine::AddEntriesToList(std::string listKey, std::vector<std::strin
 std::string StorageEngine::RemoveFromList(std::string listKey, bool right)
 {
     std::string entry = "";
-    if(keyLists.contains(listKey))
+    if(keyLists.contains(listKey) && !(keyLists[listKey].empty()))
     {
         if(right)
         {
@@ -71,6 +71,21 @@ std::string StorageEngine::RemoveFromList(std::string listKey, bool right)
         }
     }
     return entry;
+}
+
+std::vector<std::string> StorageEngine::RemoveEntriesFromList(std::string listKey, int numOfEntries, bool right)
+{
+    if(keyLists.contains(listKey))
+    {
+        numOfEntries = std::min(numOfEntries, ElementsInList(listKey));
+        std::vector<std::string> entries(numOfEntries);
+        for(int i = 0; i < numOfEntries; ++i)
+        {
+            entries[i] = RemoveFromList(listKey, right);
+        }
+        return entries;
+    }
+    return std::vector<std::string>();
 }
 
 int StorageEngine::ElementsInList(std::string listKey)

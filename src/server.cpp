@@ -332,12 +332,26 @@ std::string Server::RPop(std::vector<std::string> &respArr)
 
 std::string Server::Pop(std::vector<std::string> &respArr, bool right)
 {
-    std::string entry = storageEngine->RemoveFromList(respArr[1], right);
-    if(entry.empty())
+    int numOfEntries = 1;
+    std::string result = "";
+    if(respArr.size() > 2)
     {
-        return "$-1\r\n";
+        numOfEntries = stoi(respArr[2]);
     }
-    return "$" + std::to_string(entry.length()) + "\r\n" + entry + "\r\n";
+    std::vector<std::string> entries = storageEngine->RemoveEntriesFromList(respArr[1], numOfEntries, right);
+    if(entries.empty())
+    {
+        result = "$-1\r\n";
+    }
+    else if(entries.size() > 1)
+    {
+        result = "*" + std::to_string(entries.size()) + "\r\n";
+    }
+    for(int i = 0; i < entries.size(); ++i)
+    {
+        result += "$" + std::to_string(entries[i].length()) + "\r\n" + entries[i] + "\r\n";
+    }
+    return result;
 }
 
 void Server::HandleResponse(int client_fd, std::string response)
