@@ -9,11 +9,15 @@ public:
     StorageEngine(){}
 
     void AddEntry(std::string key, std::string val, bool expires, int timeExpiresMs = 0);
-    bool Contains(std::string key){return keyVals.contains(key);}
     std::string GetValue(std::string key);
+
+    bool Contains(std::string key);
+    bool ContainsList(std::string listKey);
 
     void AddToList(std::string listKey, std::string entry);
     int ElementsInList(std::string listKey);
+    std::vector<std::string> GetList(std::string listKey);
+    std::vector<std::string> ElementsInRange(std::string listKey, int start, int end);
 
     bool CheckExpired(std::string key);
 

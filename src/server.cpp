@@ -212,6 +212,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   {
     return RPush(respArr);
   }
+  else if(cmd == "LRANGE")
+  {
+    return LRange(respArr);
+  }
   else
   {
     return "+PONG\r\n";
@@ -267,6 +271,22 @@ std::string Server::RPush(std::vector<std::string> &respArr)
     }
     int elementsInList = storageEngine->ElementsInList(keyList);
     return ":" + std::to_string(elementsInList) + "\r\n";
+}
+
+std::string Server::LRange(std::vector<std::string> &respArr)
+{
+    std::string listKey = respArr[1];
+    int start = stoi(respArr[2]);
+    int end = stoi(respArr[3]);
+    std::vector<std::string> result = storageEngine->ElementsInRange(listKey, start, end);
+    std::string strResult = "*" + std::to_string(result.size()) + "\r\n";
+    
+    for(int i = 0; i < result.size(); ++i)
+    {
+        strResult +=  "$" + std::to_string(result[i].length()) + "\r\n" + result[i] + "\r\n";
+    }
+
+    return strResult;
 }
 
 void Server::HandleResponse(int client_fd, std::string response)

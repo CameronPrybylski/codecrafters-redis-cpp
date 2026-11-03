@@ -20,6 +20,16 @@ std::string StorageEngine::GetValue(std::string key)
     return "";
 }
 
+bool StorageEngine::Contains(std::string key)
+{
+    return keyVals.contains(key);
+}
+
+bool StorageEngine::ContainsList(std::string listKey)
+{
+    return keyLists.contains(listKey);
+}
+
 void StorageEngine::AddToList(std::string listKey, std::string entry)
 {
     if(keyLists.contains(listKey))
@@ -39,6 +49,36 @@ int StorageEngine::ElementsInList(std::string listKey)
         return keyLists[listKey].size();
     }
     return 0;
+}
+
+std::vector<std::string> StorageEngine::GetList(std::string listKey)
+{
+    if(keyLists.contains(listKey))
+    {
+        return keyLists[listKey];
+    }
+    return std::vector<std::string>();
+}
+
+std::vector<std::string> StorageEngine::ElementsInRange(std::string listKey, int start, int end)
+{
+    int elementsInList = ElementsInList(listKey);
+    if(elementsInList > 0 && start < elementsInList && start <= end)
+    {
+        //Make end exclusive incase end is greater than elements in list
+        end += 1;
+        end = std::min(end, elementsInList);
+        std::vector<std::string> result(end - start);
+        std::vector<std::string> keyList = GetList(listKey);
+        int index = 0;
+        for(int i = start; i < end; ++i)
+        {
+            result[index] = keyList[i];
+            ++index;
+        }
+        return result;
+    }
+    return std::vector<std::string>();
 }
 
 bool StorageEngine::CheckExpired(std::string key)

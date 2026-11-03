@@ -32,6 +32,7 @@ public:
     std::string Set(std::vector<std::string>& respArr);
     std::string Get(std::vector<std::string>& respArr);
     std::string RPush(std::vector<std::string>& respArr);
+    std::string LRange(std::vector<std::string>& respArr);
 
 
     void HandleResponse(int client_fd, std::string response);
