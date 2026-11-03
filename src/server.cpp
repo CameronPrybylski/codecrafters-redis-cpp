@@ -238,8 +238,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   else if(cmd == "RPUSH")
   {
     std::string keyList = respArr[1];
-    std::string entry = respArr[2];
-    storageEngine->AddToList(keyList, entry);
+    for(int i = 2; i < respArr.size(); ++i)
+    {
+        storageEngine->AddToList(keyList, respArr[i]);
+    }
     int elementsInList = storageEngine->ElementsInList(keyList);
     return ":" + std::to_string(elementsInList) + "\r\n";
   }
