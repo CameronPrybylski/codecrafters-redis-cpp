@@ -1,14 +1,15 @@
 #pragma once
 
 #include <vector>
-#include <map>
 #include <string>
-#include <chrono>
+#include <memory>
+
+class StorageEngine;
 
 class Server {
 
 public:
-    Server(){}
+    Server();
 
     bool Create();
     bool Bind();
@@ -25,11 +26,11 @@ public:
     std::string HandleRespArr(std::vector<std::string>& respArr, int client_fd);
 
     void HandleResponse(int client_fd, std::string response);
-    bool CheckExpired(std::string key);
 
 private:
     int server_fd;
-    std::map<std::string, std::string> keyVals;
-    std::map<std::string, int> keyExpires;
-    std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
+    std::shared_ptr<StorageEngine> storageEngine;
+    //std::map<std::string, std::string> keyVals;
+    //std::map<std::string, int> keyExpires;
+    //std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
 };

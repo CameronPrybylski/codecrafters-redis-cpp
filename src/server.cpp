@@ -1,4 +1,5 @@
 #include <server.h>
+#include <storage_engine.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -9,8 +10,13 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <poll.h>
 #include <thread>
+
+
+Server::Server()
+{
+    storageEngine = std::make_shared<StorageEngine>();
+}
 
 bool Server::Create()
 {
@@ -162,6 +168,7 @@ void Server::AddToRespArr(std::string& messageStream, std::vector<std::string>& 
     {
       break;
     }
+
     std::string element = messageStream.substr(0, end);
 
     if(element.find("*") != std::string::npos)
@@ -195,26 +202,31 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   }
   else if(cmd == "SET")
   {
-    keyVals[respArr[1]] = respArr[2];
-    std::cout << respArr.size() << std::endl;
+    //keyVals[respArr[1]] = respArr[2];
+    int time = 0;
+    bool expires = false;
     if(respArr.size() > 3)
     {
-        int time = stoi(respArr[4]);
+        time = stoi(respArr[4]);
+        expires = true;
         if(respArr[3] == "EX")
         {
             time *= 1000;
         }
-        keyExpires[respArr[1]] = time;
-        keyTimes[respArr[1]] = std::chrono::system_clock::now();
+        //keyExpires[respArr[1]] = time;
+        //keyTimes[respArr[1]] = std::chrono::system_clock::now();
     }
+
+    storageEngine->AddEntry(respArr[1], respArr[2], expires, time);
+
     return "+OK\r\n";
   }
   else if(cmd == "GET")
   {
     std::string key = respArr[1];
-    if(keyVals.contains(key) && !CheckExpired(key))
+    if(storageEngine->Contains(key) && !(storageEngine->CheckExpired(key)))
     {
-        std::string value = keyVals[key];
+        std::string value = storageEngine->GetValue(key);
         std::string resp = "$" + std::to_string(value.length()) + "\r\n" + value + "\r\n";
         return resp;
     }
@@ -222,6 +234,14 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     {
         return "$-1\r\n";
     }
+  }
+  else if(cmd == "RPUSH")
+  {
+    std::string keyList = respArr[1];
+    std::string entry = respArr[2];
+    storageEngine->AddToList(keyList, entry);
+    int elementsInList = storageEngine->ElementsInList(keyList);
+    return ":" + std::to_string(elementsInList) + "\r\n";
   }
   else
   {
@@ -233,24 +253,4 @@ void Server::HandleResponse(int client_fd, std::string response)
 {
     const char* chResp = response.c_str();
     send(client_fd, chResp, strlen(chResp), 0);
-}
-
-bool Server::CheckExpired(std::string key)
-{
-    if(keyTimes.contains(key))
-    {
-        auto time = keyTimes[key];
-        auto now = std::chrono::system_clock::now();
-        int timeToExpire = keyExpires[key];
-        std::chrono::duration<double, std::milli> ms_double = now - time;
-        std::cout << ms_double << " " << std::chrono::milliseconds(timeToExpire) << std::endl;
-        if(ms_double > std::chrono::milliseconds(timeToExpire))
-        {
-            keyVals.erase(key);
-            keyExpires.erase(key);
-            keyTimes.erase(key);
-            return true;
-        }
-    }
-    return false;
 }
