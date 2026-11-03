@@ -20,10 +20,19 @@ public:
     void Close();
 
     void HandleClient(int client_fd);
+    
     std::string HandleMessageStream(std::string& messageStream, int& numOfElements, std::vector<std::string>& respArr, int client_fd);
+    
     int NumberOfElements(std::string& messageStream);
+    
     void AddToRespArr(std::string& messageStream, std::vector<std::string>& respArr);
+
     std::string HandleRespArr(std::vector<std::string>& respArr, int client_fd);
+    std::string Echo(std::vector<std::string>& respArr);
+    std::string Set(std::vector<std::string>& respArr);
+    std::string Get(std::vector<std::string>& respArr);
+    std::string RPush(std::vector<std::string>& respArr);
+
 
     void HandleResponse(int client_fd, std::string response);
 

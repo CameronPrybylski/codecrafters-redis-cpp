@@ -198,13 +198,36 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   std::string response = "";
   if(cmd == "ECHO")
   {
-    return "$" + std::to_string(respArr[1].size()) + "\r\n" + respArr[1] + "\r\n";
+    return Echo(respArr);
   }
   else if(cmd == "SET")
   {
-    //keyVals[respArr[1]] = respArr[2];
+    return Set(respArr);
+  }
+  else if(cmd == "GET")
+  {
+    return Get(respArr);
+  }
+  else if(cmd == "RPUSH")
+  {
+    return RPush(respArr);
+  }
+  else
+  {
+    return "+PONG\r\n";
+  }
+}
+
+std::string Server::Echo(std::vector<std::string> &respArr)
+{
+    return "$" + std::to_string(respArr[1].size()) + "\r\n" + respArr[1] + "\r\n";
+}
+
+std::string Server::Set(std::vector<std::string> &respArr)
+{
     int time = 0;
     bool expires = false;
+
     if(respArr.size() > 3)
     {
         time = stoi(respArr[4]);
@@ -213,16 +236,15 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
         {
             time *= 1000;
         }
-        //keyExpires[respArr[1]] = time;
-        //keyTimes[respArr[1]] = std::chrono::system_clock::now();
     }
 
     storageEngine->AddEntry(respArr[1], respArr[2], expires, time);
 
     return "+OK\r\n";
-  }
-  else if(cmd == "GET")
-  {
+}
+
+std::string Server::Get(std::vector<std::string> &respArr)
+{
     std::string key = respArr[1];
     if(storageEngine->Contains(key) && !(storageEngine->CheckExpired(key)))
     {
@@ -234,9 +256,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     {
         return "$-1\r\n";
     }
-  }
-  else if(cmd == "RPUSH")
-  {
+}
+
+std::string Server::RPush(std::vector<std::string> &respArr)
+{
     std::string keyList = respArr[1];
     for(int i = 2; i < respArr.size(); ++i)
     {
@@ -244,11 +267,6 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     }
     int elementsInList = storageEngine->ElementsInList(keyList);
     return ":" + std::to_string(elementsInList) + "\r\n";
-  }
-  else
-  {
-    return "+PONG\r\n";
-  }
 }
 
 void Server::HandleResponse(int client_fd, std::string response)
