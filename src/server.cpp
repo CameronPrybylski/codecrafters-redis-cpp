@@ -212,6 +212,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   {
     return RPush(respArr);
   }
+  else if(cmd == "LPUSH")
+  {
+    return LPush(respArr);
+  }
   else if(cmd == "LRANGE")
   {
     return LRange(respArr);
@@ -264,12 +268,24 @@ std::string Server::Get(std::vector<std::string> &respArr)
 
 std::string Server::RPush(std::vector<std::string> &respArr)
 {
-    std::string keyList = respArr[1];
-    for(int i = 2; i < respArr.size(); ++i)
-    {
-        storageEngine->AddToList(keyList, respArr[i]);
-    }
-    int elementsInList = storageEngine->ElementsInList(keyList);
+   return Push(respArr, true);
+}
+
+std::string Server::LPush(std::vector<std::string> &respArr)
+{
+    return Push(respArr, false);
+}
+
+std::string Server::Push(std::vector<std::string> &respArr, bool right)
+{
+    std::string listKey = respArr[1];
+    std::vector<std::string> entries;
+    entries.assign(respArr.begin() + 2, respArr.end());
+
+    storageEngine->AddEntriesToList(listKey, entries, right);
+
+    int elementsInList = storageEngine->ElementsInList(listKey);
+    
     return ":" + std::to_string(elementsInList) + "\r\n";
 }
 

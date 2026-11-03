@@ -32,6 +32,8 @@ public:
     std::string Set(std::vector<std::string>& respArr);
     std::string Get(std::vector<std::string>& respArr);
     std::string RPush(std::vector<std::string>& respArr);
+    std::string LPush(std::vector<std::string>& respArr);
+    std::string Push(std::vector<std::string>& respArr, bool right);
     std::string LRange(std::vector<std::string>& respArr);
 
 

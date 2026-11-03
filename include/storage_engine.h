@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <deque>
 #include <chrono>
 
 class StorageEngine {
@@ -14,9 +15,11 @@ public:
     bool Contains(std::string key);
     bool ContainsList(std::string listKey);
 
-    void AddToList(std::string listKey, std::string entry);
+    void AddToList(std::string listKey, std::string entry, bool right);
+    void AddEntriesToList(std::string listKey, std::vector<std::string>& entries, bool right);
+    //void AddToFrontList(std::string listKey, std::string entry);
     int ElementsInList(std::string listKey);
-    std::vector<std::string> GetList(std::string listKey);
+    std::deque<std::string> GetList(std::string listKey);
 
     void HandleNegativeIndex(int& index, int elementsInList);
 
@@ -29,5 +32,5 @@ private:
     std::map<std::string, int> keyExpires;
     std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
 
-    std::map<std::string, std::vector<std::string>> keyLists;
+    std::map<std::string, std::deque<std::string>> keyLists;
 };

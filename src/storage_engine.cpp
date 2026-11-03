@@ -31,15 +31,26 @@ bool StorageEngine::ContainsList(std::string listKey)
     return keyLists.contains(listKey);
 }
 
-void StorageEngine::AddToList(std::string listKey, std::string entry)
+void StorageEngine::AddToList(std::string listKey, std::string entry, bool right)
 {
     if(keyLists.contains(listKey))
     {
-        keyLists[listKey].push_back(entry);
+        if(right)
+            keyLists[listKey].push_back(entry);
+        else
+            keyLists[listKey].push_front(entry);
     }
     else
     {
         keyLists[listKey] = {entry};
+    }
+}
+
+void StorageEngine::AddEntriesToList(std::string listKey, std::vector<std::string>& entries, bool right)
+{
+    for(int i = 0; i < entries.size(); ++i)
+    {
+        AddToList(listKey, entries[i], right);
     }
 }
 
@@ -52,13 +63,13 @@ int StorageEngine::ElementsInList(std::string listKey)
     return 0;
 }
 
-std::vector<std::string> StorageEngine::GetList(std::string listKey)
+std::deque<std::string> StorageEngine::GetList(std::string listKey)
 {
     if(keyLists.contains(listKey))
     {
         return keyLists[listKey];
     }
-    return std::vector<std::string>();
+    return std::deque<std::string>();
 }
 
 void StorageEngine::HandleNegativeIndex(int& index, int elementsInList)
@@ -81,7 +92,7 @@ std::vector<std::string> StorageEngine::ElementsInRange(std::string listKey, int
         end += 1;
         end = std::min(end, elementsInList);
         std::vector<std::string> result(end - start);
-        std::vector<std::string> keyList = GetList(listKey);
+        std::deque<std::string> keyList = GetList(listKey);
         int index = 0;
         for(int i = start; i < end; ++i)
         {
