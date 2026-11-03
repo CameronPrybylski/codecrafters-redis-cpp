@@ -1,4 +1,5 @@
 #include <storage_engine.h>
+#include <iostream>
 
 
 void StorageEngine::AddEntry(std::string key, std::string value, bool expires, int timeExpiresMs)
@@ -60,10 +61,21 @@ std::vector<std::string> StorageEngine::GetList(std::string listKey)
     return std::vector<std::string>();
 }
 
+void StorageEngine::HandleNegativeIndex(int& index, int elementsInList)
+{
+    if(index < 0)
+    {
+        index = elementsInList + index;
+        index = std::max(0, index);
+    }
+}
+
 std::vector<std::string> StorageEngine::ElementsInRange(std::string listKey, int start, int end)
 {
     int elementsInList = ElementsInList(listKey);
-    if(elementsInList > 0 && start < elementsInList && start <= end)
+    HandleNegativeIndex(start, elementsInList);
+    HandleNegativeIndex(end, elementsInList);
+    if(elementsInList > 0 && start < elementsInList && start <= end )
     {
         //Make end exclusive incase end is greater than elements in list
         end += 1;

@@ -17,6 +17,9 @@ public:
     void AddToList(std::string listKey, std::string entry);
     int ElementsInList(std::string listKey);
     std::vector<std::string> GetList(std::string listKey);
+
+    void HandleNegativeIndex(int& index, int elementsInList);
+
     std::vector<std::string> ElementsInRange(std::string listKey, int start, int end);
 
     bool CheckExpired(std::string key);
