@@ -228,6 +228,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   {
     return LPop(respArr);
   }
+  else if(cmd == "BLPOP")
+  {
+    return BLPop(respArr);
+  }
   else
   {
     return "+PONG\r\n";
@@ -328,6 +332,45 @@ std::string Server::LPop(std::vector<std::string> &respArr)
 std::string Server::RPop(std::vector<std::string> &respArr)
 {
     return Pop(respArr, true);
+}
+
+std::string Server::BLPop(std::vector<std::string> &respArr)
+{
+    return BPop(respArr, false);
+}
+
+std::string Server::BRPop(std::vector<std::string> &respArr)
+{
+    return BPop(respArr, true);
+}
+
+std::string Server::BPop(std::vector<std::string> &respArr, bool right)
+{
+    int timeout = stoi(respArr[2]);
+    auto start = std::chrono::system_clock::now();
+    auto now = std::chrono::system_clock::now();
+    auto diff = now - start;
+    std::string listKey = respArr[1];
+    std::string result;
+    std::vector<std::string> bpopArr = {respArr[0], respArr[1]};
+    storageEngine->IncrementBPop(listKey);
+    //diff < std::chrono::seconds(timeout) ||
+    while(timeout == 0)
+    {
+        //result = storageEngine->BPop(listKey, right);
+        result = Pop(bpopArr, right);
+        if(result != "$-1\r\n")
+        {
+            //std::cout << result << std::endl;
+            //result = "$" + std::to_string(result.length()) + "\r\n" + result + "\r\n";
+            break;
+        }
+        now = std::chrono::system_clock::now();
+        diff = now - start;
+    }
+    std::string arrLength = "*2\r\n";
+    std::string elements = "$" + std::to_string(listKey.length()) + "\r\n" + listKey + "\r\n" + result;
+    return arrLength + elements;
 }
 
 std::string Server::Pop(std::vector<std::string> &respArr, bool right)

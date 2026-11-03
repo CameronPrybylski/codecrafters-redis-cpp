@@ -78,14 +78,43 @@ std::vector<std::string> StorageEngine::RemoveEntriesFromList(std::string listKe
     if(keyLists.contains(listKey))
     {
         numOfEntries = std::min(numOfEntries, ElementsInList(listKey));
-        std::vector<std::string> entries(numOfEntries);
+        std::vector<std::string> entries;
+        std::string entry;
         for(int i = 0; i < numOfEntries; ++i)
         {
-            entries[i] = RemoveFromList(listKey, right);
+            entry = RemoveFromList(listKey, right);
+            if(entry.empty())
+            {
+                break;
+            }
+            entries.push_back(entry);
         }
         return entries;
     }
     return std::vector<std::string>();
+}
+
+std::string StorageEngine::BPop(std::string listKey, bool right)
+{
+    std::string entry = "";
+    if(keyLists.contains(listKey))
+    {
+        if(right)
+        {
+            entry = keyLists[listKey].back();
+        }
+        else
+        {
+            entry = keyLists[listKey].front();
+        }
+        bPops[listKey]--;
+        if(bPops[listKey] <= 0)
+        {
+            bPops.erase(listKey);
+            RemoveEntriesFromList(listKey, 1, right);
+        }
+    }
+    return entry;
 }
 
 int StorageEngine::ElementsInList(std::string listKey)

@@ -20,6 +20,9 @@ public:
     std::string RemoveFromList(std::string listKey, bool right);
     std::vector<std::string> RemoveEntriesFromList(std::string listKey, int numOfEntries, bool right);
 
+    std::string BPop(std::string listKey, bool right);
+    void IncrementBPop(std::string listKey){bPops[listKey]++;}
+
     int ElementsInList(std::string listKey);
     std::deque<std::string> GetList(std::string listKey);
 
@@ -35,4 +38,5 @@ private:
     std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
 
     std::map<std::string, std::deque<std::string>> keyLists;
+    std::map<std::string, int> bPops;
 };

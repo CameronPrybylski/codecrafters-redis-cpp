@@ -38,6 +38,10 @@ public:
     std::string LLen(std::vector<std::string>& respArr);
     std::string LPop(std::vector<std::string>& respArr);
     std::string RPop(std::vector<std::string>& respArr);
+    std::string BLPop(std::vector<std::string>& respArr);
+    std::string BRPop(std::vector<std::string>& respArr);
+
+    std::string BPop(std::vector<std::string>& respArr, bool right);
     std::string Pop(std::vector<std::string>& respArr, bool right);
 
 
