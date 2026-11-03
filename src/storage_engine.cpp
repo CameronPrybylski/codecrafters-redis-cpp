@@ -54,6 +54,25 @@ void StorageEngine::AddEntriesToList(std::string listKey, std::vector<std::strin
     }
 }
 
+std::string StorageEngine::RemoveFromList(std::string listKey, bool right)
+{
+    std::string entry = "";
+    if(keyLists.contains(listKey))
+    {
+        if(right)
+        {
+            entry = keyLists[listKey].back();
+            keyLists[listKey].pop_back();
+        }
+        else
+        {
+            entry = keyLists[listKey].front();
+            keyLists[listKey].pop_front();
+        }
+    }
+    return entry;
+}
+
 int StorageEngine::ElementsInList(std::string listKey)
 {
     if(keyLists.contains(listKey))

@@ -36,6 +36,9 @@ public:
     std::string Push(std::vector<std::string>& respArr, bool right);
     std::string LRange(std::vector<std::string>& respArr);
     std::string LLen(std::vector<std::string>& respArr);
+    std::string LPop(std::vector<std::string>& respArr);
+    std::string RPop(std::vector<std::string>& respArr);
+    std::string Pop(std::vector<std::string>& respArr, bool right);
 
 
     void HandleResponse(int client_fd, std::string response);

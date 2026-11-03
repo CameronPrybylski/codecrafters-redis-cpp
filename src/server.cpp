@@ -224,6 +224,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   {
     return LLen(respArr);
   }
+  else if(cmd == "LPOP")
+  {
+    return LPop(respArr);
+  }
   else
   {
     return "+PONG\r\n";
@@ -314,6 +318,26 @@ std::string Server::LLen(std::vector<std::string> &respArr)
     std::string listKey = respArr[1];
     int length = storageEngine->ElementsInList(listKey);
     return ":"  + std::to_string(length) + "\r\n";
+}
+
+std::string Server::LPop(std::vector<std::string> &respArr)
+{
+    return Pop(respArr, false);
+}
+
+std::string Server::RPop(std::vector<std::string> &respArr)
+{
+    return Pop(respArr, true);
+}
+
+std::string Server::Pop(std::vector<std::string> &respArr, bool right)
+{
+    std::string entry = storageEngine->RemoveFromList(respArr[1], right);
+    if(entry.empty())
+    {
+        return "$-1\r\n";
+    }
+    return "$" + std::to_string(entry.length()) + "\r\n" + entry + "\r\n";
 }
 
 void Server::HandleResponse(int client_fd, std::string response)
