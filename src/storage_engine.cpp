@@ -69,6 +69,10 @@ std::string StorageEngine::RemoveFromList(std::string listKey, bool right)
             entry = keyLists[listKey].front();
             keyLists[listKey].pop_front();
         }
+        if(keyLists[listKey].empty())
+        {
+            keyLists.erase(listKey);
+        }
     }
     return entry;
 }
