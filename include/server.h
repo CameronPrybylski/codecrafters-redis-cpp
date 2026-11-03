@@ -35,6 +35,7 @@ public:
     std::string LPush(std::vector<std::string>& respArr);
     std::string Push(std::vector<std::string>& respArr, bool right);
     std::string LRange(std::vector<std::string>& respArr);
+    std::string LLen(std::vector<std::string>& respArr);
 
 
     void HandleResponse(int client_fd, std::string response);
