@@ -232,6 +232,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
   {
     return BLPop(respArr);
   }
+  else if(cmd == "TYPE")
+  {
+    return Type(respArr);
+  }
   else
   {
     return "+PONG\r\n";
@@ -395,6 +399,11 @@ std::string Server::Pop(std::vector<std::string> &respArr, bool right)
         result += "$" + std::to_string(entries[i].length()) + "\r\n" + entries[i] + "\r\n";
     }
     return result;
+}
+
+std::string Server::Type(std::vector<std::string> &respArr)
+{
+    return "+" + storageEngine->GetType(respArr[1]) + "\r\n";
 }
 
 void Server::HandleResponse(int client_fd, std::string response)

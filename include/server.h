@@ -44,6 +44,8 @@ public:
     std::string BPop(std::vector<std::string>& respArr, bool right);
     std::string Pop(std::vector<std::string>& respArr, bool right);
 
+    std::string Type(std::vector<std::string>& respArr);
+
 
     void HandleResponse(int client_fd, std::string response);
 

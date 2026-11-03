@@ -32,6 +32,8 @@ public:
 
     bool CheckExpired(std::string key);
 
+    std::string GetType(std::string key);
+
 private:
     std::map<std::string, std::string> keyVals;
     std::map<std::string, int> keyExpires;

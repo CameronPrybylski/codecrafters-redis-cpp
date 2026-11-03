@@ -189,3 +189,19 @@ bool StorageEngine::CheckExpired(std::string key)
     }
     return false;
 }
+
+std::string StorageEngine::GetType(std::string key)
+{
+    if(keyVals.contains(key))
+    {
+        return "string";
+    }
+    if(keyLists.contains(key))
+    {
+        return "list";
+    }
+    else
+    {
+        return "none";
+    }
+}
