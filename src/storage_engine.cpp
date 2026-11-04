@@ -98,29 +98,6 @@ std::vector<std::string> StorageEngine::RemoveEntriesFromList(std::string listKe
     return std::vector<std::string>();
 }
 
-std::string StorageEngine::BPop(std::string listKey, bool right)
-{
-    std::string entry = "";
-    if(keyLists.contains(listKey))
-    {
-        if(right)
-        {
-            entry = keyLists[listKey].back();
-        }
-        else
-        {
-            entry = keyLists[listKey].front();
-        }
-        bPops[listKey]--;
-        if(bPops[listKey] <= 0)
-        {
-            bPops.erase(listKey);
-            RemoveEntriesFromList(listKey, 1, right);
-        }
-    }
-    return entry;
-}
-
 int StorageEngine::ElementsInList(std::string listKey)
 {
     if(keyLists.contains(listKey))
@@ -200,8 +177,36 @@ std::string StorageEngine::GetType(std::string key)
     {
         return "list";
     }
+    if(streams.contains(key))
+    {
+        return "stream";
+    }
     else
     {
         return "none";
     }
+}
+
+void StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
+{
+    if(streams.contains(streamKey))
+    {
+        streams[streamKey].entries.push_back(entry);
+    }
+    else
+    {
+        streams[streamKey].entries = {entry};
+    }
+}
+
+void StorageEngine::AddEntryToStream(std::string streamKey, std::vector<std::string> keyValuePairs, std::string entryID)
+{
+    StreamEntry entry;
+    entry.id = entryID;
+    for(int i = 0; i < keyValuePairs.size(); i += 2)
+    {
+        std::pair<std::string, std::string> entryKeyVal = std::make_pair(keyValuePairs[i], keyValuePairs[i+1]);
+        entry.AddKeyValPair(entryKeyVal);
+    }
+    AddToStream(streamKey, entry);
 }

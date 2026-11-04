@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <functional>
+#include <map>
 
 class StorageEngine;
 
@@ -46,13 +48,13 @@ public:
 
     std::string Type(std::vector<std::string>& respArr);
 
+    std::string XAdd(std::vector<std::string>& respArr);
+
 
     void HandleResponse(int client_fd, std::string response);
 
 private:
     int server_fd;
     std::shared_ptr<StorageEngine> storageEngine;
-    //std::map<std::string, std::string> keyVals;
-    //std::map<std::string, int> keyExpires;
-    //std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
+    std::map<std::string, std::function<std::string(std::vector<std::string>&)>> commands;
 };

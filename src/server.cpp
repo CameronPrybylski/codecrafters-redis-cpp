@@ -16,6 +16,19 @@
 Server::Server()
 {
     storageEngine = std::make_shared<StorageEngine>();
+
+    commands["ECHO"] = [this](std::vector<std::string>& respArr) { return this->Echo(respArr); };
+    commands["SET"] = [this](std::vector<std::string>& respArr) { return this->Set(respArr); };
+    commands["GET"] = [this](std::vector<std::string>& respArr) { return this->Get(respArr); };
+    commands["RPUSH"] = [this](std::vector<std::string>& respArr) { return this->RPush(respArr); };
+    commands["LPUSH"] = [this](std::vector<std::string>& respArr) { return this->LPush(respArr); };
+    commands["LRANGE"] = [this](std::vector<std::string>& respArr) { return this->LRange(respArr); };
+    commands["LLEN"] = [this](std::vector<std::string>& respArr) { return this->LLen(respArr); };
+    commands["LPOP"] = [this](std::vector<std::string>& respArr) { return this->LPop(respArr); };
+    commands["BLPOP"] = [this](std::vector<std::string>& respArr) { return this->BLPop(respArr); };
+    commands["TYPE"] = [this](std::vector<std::string>& respArr) { return this->Type(respArr); };
+    commands["XADD"] = [this](std::vector<std::string>& respArr) { return this->XAdd(respArr); };
+
 }
 
 bool Server::Create()
@@ -194,52 +207,14 @@ void Server::AddToRespArr(std::string& messageStream, std::vector<std::string>& 
 
 std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_fd)
 {
-  std::string cmd = respArr[0];
-  std::string response = "";
-  if(cmd == "ECHO")
-  {
-    return Echo(respArr);
-  }
-  else if(cmd == "SET")
-  {
-    return Set(respArr);
-  }
-  else if(cmd == "GET")
-  {
-    return Get(respArr);
-  }
-  else if(cmd == "RPUSH")
-  {
-    return RPush(respArr);
-  }
-  else if(cmd == "LPUSH")
-  {
-    return LPush(respArr);
-  }
-  else if(cmd == "LRANGE")
-  {
-    return LRange(respArr);
-  }
-  else if(cmd == "LLEN")
-  {
-    return LLen(respArr);
-  }
-  else if(cmd == "LPOP")
-  {
-    return LPop(respArr);
-  }
-  else if(cmd == "BLPOP")
-  {
-    return BLPop(respArr);
-  }
-  else if(cmd == "TYPE")
-  {
-    return Type(respArr);
-  }
-  else
-  {
+    std::string cmd = respArr[0];
+    std::string response = "";
+    auto command = commands.find(cmd);
+    if(command != commands.end())
+    {
+        return command->second(respArr);
+    }
     return "+PONG\r\n";
-  }
 }
 
 std::string Server::Echo(std::vector<std::string> &respArr)
@@ -404,6 +379,17 @@ std::string Server::Pop(std::vector<std::string> &respArr, bool right)
 std::string Server::Type(std::vector<std::string> &respArr)
 {
     return "+" + storageEngine->GetType(respArr[1]) + "\r\n";
+}
+
+std::string Server::XAdd(std::vector<std::string> &respArr)
+{
+    std::string streamKey = respArr[1];
+    std::string entryID = respArr[2];
+    
+    std::vector<std::string> keyValPairs;
+    keyValPairs.assign(respArr.begin() + 3, respArr.end());
+    storageEngine->AddEntryToStream(streamKey, keyValPairs, entryID);
+    return "$" + std::to_string(entryID.length()) + "\r\n" + entryID + "\r\n";
 }
 
 void Server::HandleResponse(int client_fd, std::string response)

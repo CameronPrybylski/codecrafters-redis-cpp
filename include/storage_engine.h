@@ -4,6 +4,11 @@
 #include <deque>
 #include <chrono>
 
+#include <stream.h>
+
+struct Stream;
+struct StreamEntry;
+
 class StorageEngine {
 
 public:
@@ -20,9 +25,6 @@ public:
     std::string RemoveFromList(std::string listKey, bool right);
     std::vector<std::string> RemoveEntriesFromList(std::string listKey, int numOfEntries, bool right);
 
-    std::string BPop(std::string listKey, bool right);
-    void IncrementBPop(std::string listKey){bPops[listKey]++;}
-
     int ElementsInList(std::string listKey);
     std::deque<std::string> GetList(std::string listKey);
 
@@ -34,11 +36,14 @@ public:
 
     std::string GetType(std::string key);
 
+    void AddToStream(std::string streamKey, StreamEntry entry);
+    void AddEntryToStream(std::string streamKey, std::vector<std::string> keyValuePairs, std::string entryID = "");
+
 private:
     std::map<std::string, std::string> keyVals;
     std::map<std::string, int> keyExpires;
     std::map<std::string, std::chrono::system_clock::time_point> keyTimes;
 
     std::map<std::string, std::deque<std::string>> keyLists;
-    std::map<std::string, int> bPops;
+    std::map<std::string, Stream> streams;
 };
