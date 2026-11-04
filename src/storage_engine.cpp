@@ -192,11 +192,19 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
     std::string lessThanErr = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
     std::string isZeroErr = "ERR The ID specified in XADD must be greater than 0-0";
     std::cout << entry.id << std::endl;
+    if(entry.id == "*")
+    {
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto currTimeMilis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        std::string strCurrTimeMilis = std::to_string(currTimeMilis);
+        entry.id = strCurrTimeMilis + "-0";
+    }
     if(entry.ZeroID())
     {
         return isZeroErr;
     }
-    if(entry.WildCard() && entry.idPart1() == "0")
+    if(entry.WildCardSequence() && entry.idPart1() == "0")
     {
         entry.id = "0-1";
     }
@@ -204,7 +212,7 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
     {
         StreamEntry lastEntry = streams[streamKey].entries.back();
         
-        if(entry.WildCard())
+        if(entry.WildCardSequence())
         {
             entry.id = entry.idPart1() + "-" + streams[streamKey].NextEntryID(entry.idPart1());
         }
@@ -216,7 +224,7 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
     }
     else
     {
-        if(entry.WildCard())
+        if(entry.WildCardSequence())
         {
             entry.id = entry.idPart1() + "-1";
         }

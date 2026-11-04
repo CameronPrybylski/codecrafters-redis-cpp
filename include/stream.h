@@ -17,12 +17,21 @@ struct StreamEntry {
     }
     std::string idPart2() const
     {
+        if(id == "*")
+        {
+            return id;
+        }
         return id.substr(id.find("-") + 1, id.length());
     }
 
-    bool WildCard()
+    bool WildCardSequence()
     {
         return idPart2() == "*";
+    }
+
+    bool WildCardTimeStamp()
+    {
+        return id == "*";
     }
 
     bool ZeroID()
