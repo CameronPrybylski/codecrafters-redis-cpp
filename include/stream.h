@@ -50,4 +50,17 @@ struct StreamEntry {
 
 struct Stream {
     std::vector<StreamEntry> entries;
+
+    std::string NextEntryID(std::string idPt1)
+    {
+        std::string idPt2 = "0";
+        for(auto entry : entries)
+        {
+            if(entry.idPart1() == idPt1)
+            {
+                idPt2 = std::to_string(stoi(entry.idPart2()) + 1);
+            }
+        }
+        return idPt2;
+    }
 };

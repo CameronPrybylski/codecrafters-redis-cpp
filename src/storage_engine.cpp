@@ -191,9 +191,14 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
 {
     std::string lessThanErr = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
     std::string isZeroErr = "ERR The ID specified in XADD must be greater than 0-0";
+    std::cout << entry.id << std::endl;
     if(entry.ZeroID())
     {
         return isZeroErr;
+    }
+    if(entry.WildCard() && entry.idPart1() == "0")
+    {
+        entry.id = "0-1";
     }
     if(streams.contains(streamKey))
     {
@@ -201,7 +206,7 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
         
         if(entry.WildCard())
         {
-            entry.id = entry.idPart1() + "-" + std::to_string(stol(lastEntry.idPart1()) + 1);
+            entry.id = entry.idPart1() + "-" + streams[streamKey].NextEntryID(entry.idPart1());
         }
         if(entry < lastEntry)
         {
@@ -211,6 +216,10 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
     }
     else
     {
+        if(entry.WildCard())
+        {
+            entry.id = entry.idPart1() + "-1";
+        }
         streams[streamKey].entries = {entry};
     }
 

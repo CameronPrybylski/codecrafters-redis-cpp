@@ -124,6 +124,7 @@ void Server::HandleClient(int client_fd)
     }
     std::string msg(buffer);
     messageStream += msg;
+    //std::cout << messageStream << std::endl;
     //HandleMessageStream(messageStream, numOfElements, respArr);    
     std::string response = HandleMessageStream(messageStream, numOfElements, respArr, client_fd);
     if(!response.empty())
@@ -184,23 +185,13 @@ void Server::AddToRespArr(std::string& messageStream, std::vector<std::string>& 
 
     std::string element = messageStream.substr(0, end);
 
-    if(element.find("*") != std::string::npos)
+    if(element.find("$") == std::string::npos)
     {
+        respArr.push_back(element);
+    }
 
-    }
-    else if(element.find("$") != std::string::npos)
-    {
-
-    }
-    else if(element.find(":") != std::string::npos)
-    {
-
-    }
-    else
-    {
-      respArr.push_back(element);
-    }
     messageStream = messageStream.substr(element.length() + 2, messageStream.length());
+
     end = messageStream.find("\r\n");
   }
 }
