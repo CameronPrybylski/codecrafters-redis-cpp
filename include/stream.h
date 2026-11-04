@@ -20,6 +20,11 @@ struct StreamEntry {
         return id.substr(id.find("-") + 1, id.length());
     }
 
+    bool WildCard()
+    {
+        return idPart2() == "*";
+    }
+
     bool ZeroID()
     {
         return idPart1() == "0" && idPart2() == "0";

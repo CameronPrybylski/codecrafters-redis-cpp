@@ -198,9 +198,11 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
     if(streams.contains(streamKey))
     {
         StreamEntry lastEntry = streams[streamKey].entries.back();
-        std::cout << lastEntry.idPart1() << std::endl;
-        std::cout << entry.id << std::endl;
         
+        if(entry.WildCard())
+        {
+            entry.id = entry.idPart1() + "-" + std::to_string(stol(lastEntry.idPart1()) + 1);
+        }
         if(entry < lastEntry)
         {
             return lessThanErr;
