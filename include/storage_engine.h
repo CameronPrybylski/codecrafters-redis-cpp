@@ -36,8 +36,8 @@ public:
 
     std::string GetType(std::string key);
 
-    void AddToStream(std::string streamKey, StreamEntry entry);
-    void AddEntryToStream(std::string streamKey, std::vector<std::string> keyValuePairs, std::string entryID = "");
+    std::string AddToStream(std::string streamKey, StreamEntry entry);
+    std::string AddEntryToStream(std::string streamKey, std::vector<std::string> keyValuePairs, std::string entryID = "");
 
 private:
     std::map<std::string, std::string> keyVals;

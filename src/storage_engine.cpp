@@ -187,19 +187,35 @@ std::string StorageEngine::GetType(std::string key)
     }
 }
 
-void StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
+std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
 {
+    std::string lessThanErr = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
+    std::string isZeroErr = "ERR The ID specified in XADD must be greater than 0-0";
+    if(entry.ZeroID())
+    {
+        return isZeroErr;
+    }
     if(streams.contains(streamKey))
     {
+        StreamEntry lastEntry = streams[streamKey].entries.back();
+        std::cout << lastEntry.idPart1() << std::endl;
+        std::cout << entry.id << std::endl;
+        
+        if(entry < lastEntry)
+        {
+            return lessThanErr;
+        }
         streams[streamKey].entries.push_back(entry);
     }
     else
     {
         streams[streamKey].entries = {entry};
     }
+
+    return entry.id;
 }
 
-void StorageEngine::AddEntryToStream(std::string streamKey, std::vector<std::string> keyValuePairs, std::string entryID)
+std::string StorageEngine::AddEntryToStream(std::string streamKey, std::vector<std::string> keyValuePairs, std::string entryID)
 {
     StreamEntry entry;
     entry.id = entryID;
@@ -208,5 +224,5 @@ void StorageEngine::AddEntryToStream(std::string streamKey, std::vector<std::str
         std::pair<std::string, std::string> entryKeyVal = std::make_pair(keyValuePairs[i], keyValuePairs[i+1]);
         entry.AddKeyValPair(entryKeyVal);
     }
-    AddToStream(streamKey, entry);
+    return AddToStream(streamKey, entry);
 }

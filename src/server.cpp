@@ -388,8 +388,12 @@ std::string Server::XAdd(std::vector<std::string> &respArr)
     
     std::vector<std::string> keyValPairs;
     keyValPairs.assign(respArr.begin() + 3, respArr.end());
-    storageEngine->AddEntryToStream(streamKey, keyValPairs, entryID);
-    return "$" + std::to_string(entryID.length()) + "\r\n" + entryID + "\r\n";
+    std::string response = storageEngine->AddEntryToStream(streamKey, keyValPairs, entryID);
+    if(response.find("ERR") != std::string::npos)
+    {
+        return "-" + response + "\r\n";
+    }
+    return "$" + std::to_string(response.length()) + "\r\n" + response + "\r\n";
 }
 
 void Server::HandleResponse(int client_fd, std::string response)
