@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <thread>
+#include <algorithm>
 
 
 Server::Server()
@@ -28,6 +29,7 @@ Server::Server()
     commands["BLPOP"] = [this](std::vector<std::string>& respArr) { return this->BLPop(respArr); };
     commands["TYPE"] = [this](std::vector<std::string>& respArr) { return this->Type(respArr); };
     commands["XADD"] = [this](std::vector<std::string>& respArr) { return this->XAdd(respArr); };
+    commands["XRANGE"] = [this](std::vector<std::string>& respArr) { return this->XRange(respArr); };
 
 }
 
@@ -387,8 +389,42 @@ std::string Server::XAdd(std::vector<std::string> &respArr)
     return "$" + std::to_string(response.length()) + "\r\n" + response + "\r\n";
 }
 
+std::string Server::XRange(std::vector<std::string> &respArr)
+{
+    std::string streamKey = respArr[1];
+    std::string start = respArr[2];
+    std::string end = respArr[3];
+    std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, start, end);
+    std::string response = "*" + std::to_string(entriesInRange.size()) + "\r\n";
+    std::map<std::string, std::vector<std::string>>::iterator entry = entriesInRange.begin();
+    for(; entry != entriesInRange.end(); ++entry)
+    {
+        response += "*2\r\n";
+        response += "$" + std::to_string(entry->first.length()) + "\r\n" + entry->first + "\r\n";
+        response += "*" + std::to_string(entry->second.size() * 2) + "\r\n";
+        for(int i = 0; i < entry->second.size(); ++i)
+        {
+            std::string strEntry = entry->second[i];
+            std::string key = strEntry.substr(0, strEntry.find(" "));
+            std::string val = strEntry.substr(strEntry.find(" ") + 1, strEntry.length());
+            response += "$" + std::to_string(key.length()) + "\r\n" + key + "\r\n";
+            response += "$" + std::to_string(val.length()) + "\r\n" + val + "\r\n";
+        }
+    }
+    std::cout << response << std::endl;
+    return response;
+}
+
 void Server::HandleResponse(int client_fd, std::string response)
 {
-    const char* chResp = response.c_str();
-    send(client_fd, chResp, strlen(chResp), 0);
+    while(response.length() > 0)
+    {
+        int end = std::min((int)response.length(), 16);
+        std::string toSend = response.substr(0, end);
+        const char* chResp = toSend.c_str();
+        send(client_fd, chResp, strlen(chResp), 0);
+        response = response.substr(end, response.length());
+    }
+    //const char* chResp = response.c_str();
+    //send(client_fd, chResp, strlen(chResp), 0);
 }

@@ -49,6 +49,7 @@ public:
     std::string Type(std::vector<std::string>& respArr);
 
     std::string XAdd(std::vector<std::string>& respArr);
+    std::string XRange(std::vector<std::string>& respArr);
 
 
     void HandleResponse(int client_fd, std::string response);

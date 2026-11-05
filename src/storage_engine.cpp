@@ -191,7 +191,6 @@ std::string StorageEngine::AddToStream(std::string streamKey, StreamEntry entry)
 {
     std::string lessThanErr = "ERR The ID specified in XADD is equal or smaller than the target stream top item";
     std::string isZeroErr = "ERR The ID specified in XADD must be greater than 0-0";
-    std::cout << entry.id << std::endl;
     if(entry.id == "*")
     {
         auto now = std::chrono::system_clock::now();
@@ -244,4 +243,50 @@ std::string StorageEngine::AddEntryToStream(std::string streamKey, std::vector<s
         entry.AddKeyValPair(entryKeyVal);
     }
     return AddToStream(streamKey, entry);
+}
+
+std::map<std::string, std::vector<std::string>> StorageEngine::StreamEntriesInRange(std::string streamKey, std::string start, std::string end)
+{
+    if(streams.contains(streamKey))
+    {
+        std::vector<StreamEntry> entries = streams[streamKey].entries;
+        std::map<std::string, std::vector<StreamEntry>> entryMap;
+        std::map<std::string, std::vector<std::string>> ans;
+        std::string strStartPt1 = start.substr(0, start.find("-"));
+        std::string strEndPt1 = end.substr(0, end.find("-"));
+        std::string strStartPt2 = start.substr(start.find("-") + 1, start.length());
+        std::string strEndPt2 = end.substr(end.find("-") + 1, end.length());
+        long lStartPt1 = stol(strStartPt1);
+        long lEndPt1 = stol(strEndPt1);
+        long lStartPt2 = stol(strStartPt2);
+        long lEndPt2 = stol(strEndPt2);
+        for(int i = 0; i < entries.size(); ++i)
+        {
+            long timestamp = stol(entries[i].idPart1());
+            int sequenceNum = stoi(entries[i].idPart2());
+            //std::cout << timestamp << " " << sequenceNum << std::endl;
+            if(timestamp >= lStartPt1 && timestamp <= lEndPt1 && sequenceNum >= lStartPt2 && sequenceNum <= lEndPt2)
+            {
+                //std::cout << "ADD: " << timestamp << " " << sequenceNum << std::endl;
+                entryMap[entries[i].id].push_back(entries[i]);
+            }
+        }
+        for(auto entry : entryMap)
+        {
+            //ans[entry.first] = {};
+            for(int i = 0; i < entry.second.size(); ++i)
+            {
+                ans[entry.first].push_back(entry.second[i].ToString());
+            }
+        }
+        for(auto x : ans)
+        {
+            for(auto y : x.second)
+            {
+                //std::cout << x.first << " " << y << std::endl;
+            }
+        }
+        return ans;
+    }
+    return std::map<std::string, std::vector<std::string>>();
 }
