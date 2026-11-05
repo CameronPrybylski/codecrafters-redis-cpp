@@ -411,7 +411,6 @@ std::string Server::XRange(std::vector<std::string> &respArr)
             response += "$" + std::to_string(val.length()) + "\r\n" + val + "\r\n";
         }
     }
-    std::cout << response << std::endl;
     return response;
 }
 
@@ -419,12 +418,10 @@ void Server::HandleResponse(int client_fd, std::string response)
 {
     while(response.length() > 0)
     {
-        int end = std::min((int)response.length(), 16);
+        int end = std::min((int)response.length(), 64);
         std::string toSend = response.substr(0, end);
         const char* chResp = toSend.c_str();
         send(client_fd, chResp, strlen(chResp), 0);
         response = response.substr(end, response.length());
     }
-    //const char* chResp = response.c_str();
-    //send(client_fd, chResp, strlen(chResp), 0);
 }
