@@ -279,15 +279,22 @@ std::vector<long> StorageEngine::GetStreamRange(std::string start, std::string e
 {
     std::vector<long> range(4);
     long lStartPt1= 0;
-    long lEndPt1 = 0;
+    long lEndPt1 = INT_MAX;
     long lStartPt2 = 0;
-    long lEndPt2 = 0;
+    long lEndPt2 = INT_MAX;
     if(start == "-")
     {
         std::string strEndPt1 = end.substr(0, end.find("-"));
         std::string strEndPt2 = end.substr(end.find("-") + 1, end.length());
         lEndPt1 = stol(strEndPt1);
         lEndPt2 = stol(strEndPt2);
+    }
+    else if(end == "+")
+    {
+        std::string strStartPt1 = start.substr(0, start.find("-"));
+        std::string strStartPt2 = start.substr(start.find("-") + 1, start.length());
+        lStartPt1 = stol(strStartPt1);
+        lStartPt2 = stol(strStartPt2);
     }
     else
     {
