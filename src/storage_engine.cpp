@@ -284,8 +284,10 @@ std::vector<long> StorageEngine::GetStreamRange(std::string start, std::string e
     long lEndPt2 = 0;
     if(start == "-")
     {
-        lEndPt1 = stol(end);
-        lEndPt2 = INT_MAX;
+        std::string strEndPt1 = end.substr(0, end.find("-"));
+        std::string strEndPt2 = end.substr(end.find("-") + 1, end.length());
+        lEndPt1 = stol(strEndPt1);
+        lEndPt2 = stol(strEndPt2);
     }
     else
     {
