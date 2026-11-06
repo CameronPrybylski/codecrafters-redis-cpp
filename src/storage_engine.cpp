@@ -1,5 +1,6 @@
 #include <storage_engine.h>
 #include <iostream>
+#include <climits>
 
 
 void StorageEngine::AddEntry(std::string key, std::string value, bool expires, int timeExpiresMs)
@@ -252,41 +253,51 @@ std::map<std::string, std::vector<std::string>> StorageEngine::StreamEntriesInRa
         std::vector<StreamEntry> entries = streams[streamKey].entries;
         std::map<std::string, std::vector<StreamEntry>> entryMap;
         std::map<std::string, std::vector<std::string>> ans;
-        std::string strStartPt1 = start.substr(0, start.find("-"));
-        std::string strEndPt1 = end.substr(0, end.find("-"));
-        std::string strStartPt2 = start.substr(start.find("-") + 1, start.length());
-        std::string strEndPt2 = end.substr(end.find("-") + 1, end.length());
-        long lStartPt1 = stol(strStartPt1);
-        long lEndPt1 = stol(strEndPt1);
-        long lStartPt2 = stol(strStartPt2);
-        long lEndPt2 = stol(strEndPt2);
+        std::vector<long> range = GetStreamRange(start, end);
         for(int i = 0; i < entries.size(); ++i)
         {
             long timestamp = stol(entries[i].idPart1());
             int sequenceNum = stoi(entries[i].idPart2());
-            //std::cout << timestamp << " " << sequenceNum << std::endl;
-            if(timestamp >= lStartPt1 && timestamp <= lEndPt1 && sequenceNum >= lStartPt2 && sequenceNum <= lEndPt2)
+            if(timestamp >= range[0] && timestamp <= range[2] && sequenceNum >= range[1] && sequenceNum <= range[3])
             {
-                //std::cout << "ADD: " << timestamp << " " << sequenceNum << std::endl;
                 entryMap[entries[i].id].push_back(entries[i]);
             }
         }
         for(auto entry : entryMap)
         {
-            //ans[entry.first] = {};
             for(int i = 0; i < entry.second.size(); ++i)
             {
                 ans[entry.first].push_back(entry.second[i].ToString());
             }
         }
-        for(auto x : ans)
-        {
-            for(auto y : x.second)
-            {
-                //std::cout << x.first << " " << y << std::endl;
-            }
-        }
         return ans;
     }
     return std::map<std::string, std::vector<std::string>>();
+}
+
+std::vector<long> StorageEngine::GetStreamRange(std::string start, std::string end)
+{
+    std::vector<long> range(4);
+    long lStartPt1= 0;
+    long lEndPt1 = 0;
+    long lStartPt2 = 0;
+    long lEndPt2 = 0;
+    if(start == "-")
+    {
+        lEndPt1 = stol(end);
+        lEndPt2 = INT_MAX;
+    }
+    else
+    {
+        std::string strStartPt1 = start.substr(0, start.find("-"));
+        std::string strEndPt1 = end.substr(0, end.find("-"));
+        std::string strStartPt2 = start.substr(start.find("-") + 1, start.length());
+        std::string strEndPt2 = end.substr(end.find("-") + 1, end.length());
+        lStartPt1 = stol(strStartPt1);
+        lEndPt1 = stol(strEndPt1);
+        lStartPt2 = stol(strStartPt2);
+        lEndPt2 = stol(strEndPt2);
+    }
+    range = {lStartPt1, lStartPt2, lEndPt1, lEndPt2};
+    return range;
 }
