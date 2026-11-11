@@ -240,8 +240,7 @@ std::string StorageEngine::AddEntryToStream(std::string streamKey, std::vector<s
     entry.id = entryID;
     for(int i = 0; i < keyValuePairs.size(); i += 2)
     {
-        std::pair<std::string, std::string> entryKeyVal = std::make_pair(keyValuePairs[i], keyValuePairs[i+1]);
-        entry.AddKeyValPair(entryKeyVal);
+        entry.AddKeyValPair(keyValuePairs[i], keyValuePairs[i+1]);
     }
     return AddToStream(streamKey, entry);
 }
@@ -295,6 +294,14 @@ std::vector<long> StorageEngine::GetStreamRange(std::string start, std::string e
         std::string strStartPt2 = start.substr(start.find("-") + 1, start.length());
         lStartPt1 = stol(strStartPt1);
         lStartPt2 = stol(strStartPt2);
+    }
+    else if(end == "<>")
+    {
+        std::string strStartPt1 = start.substr(0, start.find("-"));
+        std::string strStartPt2 = start.substr(start.find("-") + 1, start.length());
+        lStartPt1 = stol(strStartPt1);
+        lStartPt2 = stol(strStartPt2);
+        lStartPt2 += 1;
     }
     else
     {

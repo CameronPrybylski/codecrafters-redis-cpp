@@ -49,7 +49,10 @@ public:
     std::string Type(std::vector<std::string>& respArr);
 
     std::string XAdd(std::vector<std::string>& respArr);
+
     std::string XRange(std::vector<std::string>& respArr);
+    std::string XRead(std::vector<std::string>& respArr);
+    std::string ParseRangeEntries(std::map<std::string, std::vector<std::string>>& entriesInRange, std::string streamKey);
 
 
     void HandleResponse(int client_fd, std::string response);

@@ -8,7 +8,7 @@ struct StreamEntry {
     std::string id;
     std::vector<std::pair<std::string, std::string>> keyValPairs;
 
-    void AddKeyValPair(std::pair<std::string, std::string> keyValPair);
+    void AddKeyValPair(std::string key, std::string value);
     std::string idPart1() const;
     std::string idPart2() const;
     bool WildCardSequence();

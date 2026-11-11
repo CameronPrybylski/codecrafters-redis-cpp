@@ -1,8 +1,9 @@
 #include <stream.h>
 
-void StreamEntry::AddKeyValPair(std::pair<std::string, std::string> keyValPair)
+void StreamEntry::AddKeyValPair(std::string key, std::string value)
 {
-    keyValPairs.push_back(keyValPair);
+    std::pair<std::string, std::string> entryKeyVal = std::make_pair(key, value);
+    keyValPairs.push_back(entryKeyVal);
 }
 
 std::string StreamEntry::idPart1() const

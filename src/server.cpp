@@ -30,6 +30,7 @@ Server::Server()
     commands["TYPE"] = [this](std::vector<std::string>& respArr) { return this->Type(respArr); };
     commands["XADD"] = [this](std::vector<std::string>& respArr) { return this->XAdd(respArr); };
     commands["XRANGE"] = [this](std::vector<std::string>& respArr) { return this->XRange(respArr); };
+    commands["XREAD"] = [this](std::vector<std::string>& respArr) { return this->XRead(respArr); };
 
 }
 
@@ -395,11 +396,31 @@ std::string Server::XRange(std::vector<std::string> &respArr)
     std::string start = respArr[2];
     std::string end = respArr[3];
     std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, start, end);
+    return ParseRangeEntries(entriesInRange, "");
+}
+
+std::string Server::XRead(std::vector<std::string> &respArr)
+{
+    std::string streamKey = respArr[2];
+    std::string start = respArr[3];
+    std::string end = "<>";
+    std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, start, end);
+    return ParseRangeEntries(entriesInRange, streamKey);
+}
+
+std::string Server::ParseRangeEntries(std::map<std::string, std::vector<std::string>> &entriesInRange, std::string streamKey)
+{
     std::string response = "*" + std::to_string(entriesInRange.size()) + "\r\n";
     std::map<std::string, std::vector<std::string>>::iterator entry = entriesInRange.begin();
     for(; entry != entriesInRange.end(); ++entry)
     {
         response += "*2\r\n";
+        if(!streamKey.empty())
+        {
+            response += "$" + std::to_string(streamKey.length()) + "\r\n" + streamKey + "\r\n";
+            response += "*" + std::to_string(entriesInRange.size()) + "\r\n";
+            response += "*2\r\n";
+        }
         response += "$" + std::to_string(entry->first.length()) + "\r\n" + entry->first + "\r\n";
         response += "*" + std::to_string(entry->second.size() * 2) + "\r\n";
         for(int i = 0; i < entry->second.size(); ++i)
