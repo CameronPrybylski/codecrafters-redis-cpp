@@ -396,21 +396,31 @@ std::string Server::XRange(std::vector<std::string> &respArr)
     std::string start = respArr[2];
     std::string end = respArr[3];
     std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, start, end);
-    return ParseRangeEntries(entriesInRange, "");
+    std::string response = "*" + std::to_string(entriesInRange.size()) + "\r\n";
+    response += ParseRangeEntries(entriesInRange, "");
+    return response;
 }
 
 std::string Server::XRead(std::vector<std::string> &respArr)
 {
-    std::string streamKey = respArr[2];
-    std::string start = respArr[3];
+    int numOfStreams = (respArr.size() - 2) / 2;
+    int i = 2;
     std::string end = "<>";
-    std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, start, end);
-    return ParseRangeEntries(entriesInRange, streamKey);
+    std::string response = "*" + std::to_string(numOfStreams) + "\r\n";;
+    for(int start = 0; start < numOfStreams; ++start)
+    {
+        std::string streamKey = respArr[i];
+        std::string strStart = respArr[i + numOfStreams];
+        std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, strStart, end);
+        response += ParseRangeEntries(entriesInRange, streamKey);
+        ++i;
+    }
+    return response;
 }
 
 std::string Server::ParseRangeEntries(std::map<std::string, std::vector<std::string>> &entriesInRange, std::string streamKey)
 {
-    std::string response = "*" + std::to_string(entriesInRange.size()) + "\r\n";
+    std::string response = "";
     std::map<std::string, std::vector<std::string>>::iterator entry = entriesInRange.begin();
     for(; entry != entriesInRange.end(); ++entry)
     {
