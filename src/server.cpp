@@ -483,7 +483,14 @@ std::string Server::Incr(std::vector<std::string> &respArr)
 {
     std::string key = respArr[1];
     std::string response = storageEngine->IncrementKeyValue(key);
-    response = ":" + response + "\r\n";
+    if(response.find("ERR") != std::string::npos)
+    {
+        response = "-" + response + "\r\n";
+    }
+    else
+    {
+        response = ":" + response + "\r\n";
+    }
     return response;
 }
 

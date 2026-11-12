@@ -352,7 +352,7 @@ std::string StorageEngine::IncrementKeyValue(std::string key)
         }
         catch(const std::invalid_argument& e)
         {
-            std::cerr << e.what() << '\n';
+            return "ERR value is not an integer or out of range";
         }
     }
     else
