@@ -75,3 +75,12 @@ std::string Stream::NextEntryID(std::string idPt1)
     }
     return idPt2;
 }
+
+StreamEntry Stream::GetLastEntry()
+{
+    if(!entries.empty())
+    {
+        return entries[entries.size() - 1];
+    }
+    return StreamEntry();
+}

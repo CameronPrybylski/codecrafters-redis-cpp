@@ -41,6 +41,9 @@ public:
 
     std::map<std::string, std::vector<std::string>> StreamEntriesInRange(std::string streamKey, std::string start, std::string end);
     std::vector<long> GetStreamRange(std::string start, std::string end);
+    
+    std::string MaxStreamID(std::string streamKey);
+
 private:
     std::map<std::string, std::string> keyVals;
     std::map<std::string, int> keyExpires;

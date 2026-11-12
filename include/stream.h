@@ -22,4 +22,5 @@ struct Stream {
     std::vector<StreamEntry> entries;
 
     std::string NextEntryID(std::string idPt1);
+    StreamEntry GetLastEntry();
 };

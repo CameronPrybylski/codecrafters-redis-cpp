@@ -317,3 +317,17 @@ std::vector<long> StorageEngine::GetStreamRange(std::string start, std::string e
     range = {lStartPt1, lStartPt2, lEndPt1, lEndPt2};
     return range;
 }
+
+std::string StorageEngine::MaxStreamID(std::string streamKey)
+{
+    if(streams.contains(streamKey))
+    {
+        Stream stream = streams.at(streamKey);
+        StreamEntry lastEntry = stream.GetLastEntry();
+        if(!lastEntry.id.empty())
+        {
+            return lastEntry.id;
+        }
+    }
+    return std::string();
+}

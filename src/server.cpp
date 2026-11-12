@@ -188,7 +188,7 @@ void Server::AddToRespArr(std::string& messageStream, std::vector<std::string>& 
 
     std::string element = messageStream.substr(0, end);
 
-    if(element.find("$") == std::string::npos)
+    if(element.find("$") == std::string::npos || element == "$")
     {
         respArr.push_back(element);
     }
@@ -426,6 +426,10 @@ std::string Server::XReadBlock(std::vector<std::string> &respArr)
 {
     std::string streamKey = respArr[4];
     std::string strStart = respArr[5];
+    if(strStart == "$")
+    {
+        strStart = storageEngine->MaxStreamID(streamKey);
+    }
     std::string end = "<>";
     std::string response = "*1\r\n";
     auto start = std::chrono::system_clock::now();
