@@ -15,15 +15,15 @@ public:
     std::vector<std::string> GetCommand();
 
     bool Empty(){return commands.empty();}
-    bool IsExecuting(){return this->exectuing;}
-    void SetExecuting(bool executing){this->exectuing = exectuing;}
+    bool IsExecuting(){return this->executing;}
+    void SetExecuting(bool executing){this->executing = executing;}
 
     int Count(){return commands.size();}
 
 private:
     int client_fd;
     std::queue<std::vector<std::string>> commands;
-    bool exectuing;
+    bool executing;
 };
 
 class MultiManager {
@@ -32,7 +32,7 @@ public:
 
     bool Contains(int client_fd);
 
-    bool MultiEmpty(int client_fd);
+    //bool MultiEmpty(int client_fd);
 
     bool AddNewMulti(int client_fd);
     bool AddToMulti(int client_fd, std::vector<std::string>& command);

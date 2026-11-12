@@ -1,7 +1,7 @@
 #include <multi.h>
 #include <iostream>
 
-Multi::Multi(int client_fd) : client_fd(client_fd), exectuing(false)
+Multi::Multi(int client_fd) : client_fd(client_fd), executing(false)
 {
 
 }
@@ -27,6 +27,7 @@ bool MultiManager::Contains(int client_fd)
     return multis.contains(client_fd);
 }
 
+/*
 bool MultiManager::MultiEmpty(int client_fd)
 {
     if(multis.contains(client_fd) && multis[client_fd]->Empty())
@@ -35,7 +36,7 @@ bool MultiManager::MultiEmpty(int client_fd)
     }
     return false;
 }
-
+*/
 bool MultiManager::AddNewMulti(int client_fd)
 {
     if(multis.contains(client_fd))
@@ -75,10 +76,8 @@ std::vector<std::string> MultiManager::Execute(int client_fd)
 
         command = multis[client_fd]->GetCommand();
     }
-    std::cout << "Command Count" << MultiCommandCount(client_fd) << std::endl;
     if(command.empty())
     {
-        std::cout << "Erasing client " << client_fd << std::endl;
         multis.erase(client_fd);
     }
     return command;
