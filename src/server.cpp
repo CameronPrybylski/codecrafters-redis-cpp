@@ -433,7 +433,7 @@ std::string Server::XReadBlock(std::vector<std::string> &respArr)
     std::chrono::duration<double> diff(now - start);
     int timeout = stoi(respArr[2]) / 1000;
     std::chrono::duration<double> chrono_timeout(timeout);
-    while(diff < chrono_timeout)
+    while(diff < chrono_timeout || timeout == 0)
     {
         std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, strStart, end);
         if(!entriesInRange.empty()) {
