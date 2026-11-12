@@ -26,6 +26,15 @@ bool MultiManager::Contains(int client_fd)
     return multis.contains(client_fd);
 }
 
+bool MultiManager::MultiEmpty(int client_fd)
+{
+    if(multis.contains(client_fd) && multis[client_fd]->Empty())
+    {
+        return true;
+    }
+    return false;
+}
+
 bool MultiManager::AddNewMulti(int client_fd)
 {
     if(multis.contains(client_fd))
@@ -44,4 +53,23 @@ bool MultiManager::AddToMulti(int client_fd, std::vector<std::string>& command)
         return true;
     }
     return false;
+}
+
+int MultiManager::MultiCommandCount(int client_fd)
+{
+    if(multis.contains(client_fd))
+    {
+        return multis[client_fd]->Count();
+    }
+    return 0;
+}
+
+std::vector<std::string> MultiManager::Execute(int client_fd)
+{
+    std::vector<std::string> command;
+    if(multis.contains(client_fd))
+    {
+        command = multis[client_fd]->GetCommand();
+    }
+    return command;
 }

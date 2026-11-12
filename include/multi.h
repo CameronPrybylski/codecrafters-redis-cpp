@@ -14,6 +14,10 @@ public:
     void AddCommand(std::vector<std::string>& command);
     std::vector<std::string> GetCommand();
 
+    bool Empty(){return commands.empty();}
+
+    int Count(){return commands.size();}
+
 private:
     int client_fd;
     std::queue<std::vector<std::string>> commands;
@@ -25,8 +29,14 @@ public:
 
     bool Contains(int client_fd);
 
+    bool MultiEmpty(int client_fd);
+
     bool AddNewMulti(int client_fd);
     bool AddToMulti(int client_fd, std::vector<std::string>& command);
+
+    int MultiCommandCount(int client_fd);
+
+    std::vector<std::string> Execute(int client_fd);
 
 private:
     std::map<int, std::shared_ptr<Multi>> multis;

@@ -212,6 +212,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     {
         return Multi(respArr, client_fd);
     }
+    else if(cmd == "EXEC")
+    {
+        return Exec(client_fd);
+    }
     if(command != commands.end())
     {
         return command->second(respArr);
@@ -512,6 +516,26 @@ std::string Server::Multi(std::vector<std::string>& respArr, int client_fd)
         multiManager->AddToMulti(client_fd, respArr);
         return "+QUEUED\r\n";
     }
+}
+
+std::string Server::Exec(int client_fd)
+{
+    std::string response = "";
+    if(multiManager->Contains(client_fd))
+    {
+        int multiCommandCount = multiManager->MultiCommandCount(client_fd);
+        std::string response = "*" + std::to_string(multiCommandCount);
+        while(!multiManager->MultiEmpty(client_fd))
+        {
+            std::vector<std::string> respArr = multiManager->Execute(client_fd);
+            response += HandleRespArr(respArr, client_fd);
+        }
+    }
+    else
+    {
+        response = "-ERR EXEC without MULTI\r\n";
+    }
+    return response;
 }
 
 void Server::HandleResponse(int client_fd, std::string response)
