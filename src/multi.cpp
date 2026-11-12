@@ -1,6 +1,7 @@
 #include <multi.h>
+#include <iostream>
 
-Multi::Multi(int client_fd) : client_fd(client_fd) 
+Multi::Multi(int client_fd) : client_fd(client_fd), exectuing(false)
 {
 
 }
@@ -69,7 +70,25 @@ std::vector<std::string> MultiManager::Execute(int client_fd)
     std::vector<std::string> command;
     if(multis.contains(client_fd))
     {
+        if(!multis[client_fd]->IsExecuting())
+            multis[client_fd]->SetExecuting(true);
+
         command = multis[client_fd]->GetCommand();
     }
+    std::cout << "Command Count" << MultiCommandCount(client_fd) << std::endl;
+    if(command.empty())
+    {
+        std::cout << "Erasing client " << client_fd << std::endl;
+        multis.erase(client_fd);
+    }
     return command;
+}
+
+bool MultiManager::IsExecuting(int client_fd)
+{
+    if(multis.contains(client_fd))
+    {
+        return multis[client_fd]->IsExecuting();
+    }
+    return false;
 }

@@ -15,12 +15,15 @@ public:
     std::vector<std::string> GetCommand();
 
     bool Empty(){return commands.empty();}
+    bool IsExecuting(){return this->exectuing;}
+    void SetExecuting(bool executing){this->exectuing = exectuing;}
 
     int Count(){return commands.size();}
 
 private:
     int client_fd;
     std::queue<std::vector<std::string>> commands;
+    bool exectuing;
 };
 
 class MultiManager {
@@ -37,6 +40,7 @@ public:
     int MultiCommandCount(int client_fd);
 
     std::vector<std::string> Execute(int client_fd);
+    bool IsExecuting(int client_fd);
 
 private:
     std::map<int, std::shared_ptr<Multi>> multis;

@@ -208,15 +208,15 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     std::string cmd = respArr[0];
     std::string response = "";
     auto command = commands.find(cmd);
-    if(cmd == "MULTI" || multiManager->Contains(client_fd))
-    {
-        return Multi(respArr, client_fd);
-    }
-    else if(cmd == "EXEC")
+    if(cmd == "EXEC")
     {
         return Exec(client_fd);
     }
-    if(command != commands.end())
+    else if(cmd == "MULTI" || (multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
+    {
+        return Multi(respArr, client_fd);
+    }
+    else if(command != commands.end())
     {
         return command->second(respArr);
     }
@@ -524,10 +524,14 @@ std::string Server::Exec(int client_fd)
     if(multiManager->Contains(client_fd))
     {
         int multiCommandCount = multiManager->MultiCommandCount(client_fd);
-        std::string response = "*" + std::to_string(multiCommandCount);
-        while(!multiManager->MultiEmpty(client_fd))
+        response = "*" + std::to_string(multiCommandCount) + "\r\n";
+        while(multiManager->Contains(client_fd))
         {
             std::vector<std::string> respArr = multiManager->Execute(client_fd);
+            if(respArr.empty())
+            {
+                break;
+            }
             response += HandleRespArr(respArr, client_fd);
         }
     }
