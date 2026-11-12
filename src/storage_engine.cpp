@@ -255,8 +255,14 @@ std::map<std::string, std::vector<std::string>> StorageEngine::StreamEntriesInRa
         std::vector<long> range = GetStreamRange(start, end);
         for(int i = 0; i < entries.size(); ++i)
         {
-            long timestamp = stol(entries[i].idPart1());
-            int sequenceNum = stoi(entries[i].idPart2());
+            long timestamp = 0;
+            long sequenceNum = 0;
+            try{
+                timestamp = stol(entries[i].idPart1());
+                sequenceNum = stoi(entries[i].idPart2());
+            } catch(const std::invalid_argument& e) {
+                std::cerr << "ID is: " << entries[i].id << " " << e.what() << std::endl;
+            }
             if(timestamp >= range[0] && timestamp <= range[2] && sequenceNum >= range[1] && sequenceNum <= range[3])
             {
                 entryMap[entries[i].id].push_back(entries[i]);
