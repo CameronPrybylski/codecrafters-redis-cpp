@@ -436,6 +436,7 @@ std::string Server::XReadBlock(std::vector<std::string> &respArr)
     while(diff < chrono_timeout)
     {
         std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, strStart, end);
+        std::cout << strStart << std::endl;
         if(!entriesInRange.empty()) {
             response += ParseRangeEntries(entriesInRange, streamKey);
             return response;
