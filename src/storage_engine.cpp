@@ -331,3 +331,27 @@ std::string StorageEngine::MaxStreamID(std::string streamKey)
     }
     return std::string();
 }
+
+std::string StorageEngine::IncrementKeyValue(std::string key)
+{
+    std::string strValue = "1";
+    if(keyVals.contains(key))
+    {
+        try
+        {
+            int value = stoi(keyVals[key]);
+            value += 1;
+            strValue = std::to_string(value);
+            keyVals[key] = strValue;
+        }
+        catch(const std::invalid_argument& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    }
+    else
+    {
+        keyVals[key] = strValue;
+    }
+    return strValue;
+}

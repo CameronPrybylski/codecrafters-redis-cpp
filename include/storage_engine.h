@@ -44,6 +44,8 @@ public:
     
     std::string MaxStreamID(std::string streamKey);
 
+    std::string IncrementKeyValue(std::string key);
+
 private:
     std::map<std::string, std::string> keyVals;
     std::map<std::string, int> keyExpires;

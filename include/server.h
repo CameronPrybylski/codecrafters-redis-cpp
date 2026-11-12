@@ -55,6 +55,8 @@ public:
     std::string XReadBlock(std::vector<std::string>& respArr);
     std::string ParseRangeEntries(std::map<std::string, std::vector<std::string>>& entriesInRange, std::string streamKey);
 
+    std::string Incr(std::vector<std::string>& respArr);
+
 
     void HandleResponse(int client_fd, std::string response);
 

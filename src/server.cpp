@@ -32,6 +32,8 @@ Server::Server()
     commands["XRANGE"] = [this](std::vector<std::string>& respArr) { return this->XRange(respArr); };
     commands["XREAD"] = [this](std::vector<std::string>& respArr) { return this->XRead(respArr); };
 
+    commands["INCR"] = [this](std::vector<std::string>& respArr) { return this->Incr(respArr); };
+
 }
 
 bool Server::Create()
@@ -474,6 +476,14 @@ std::string Server::ParseRangeEntries(std::map<std::string, std::vector<std::str
             response += "$" + std::to_string(val.length()) + "\r\n" + val + "\r\n";
         }
     }
+    return response;
+}
+
+std::string Server::Incr(std::vector<std::string> &respArr)
+{
+    std::string key = respArr[1];
+    std::string response = storageEngine->IncrementKeyValue(key);
+    response = ":" + response + "\r\n";
     return response;
 }
 
