@@ -1,5 +1,6 @@
 #include <server.h>
 #include <storage_engine.h>
+#include <multi.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -17,6 +18,7 @@
 Server::Server()
 {
     storageEngine = std::make_shared<StorageEngine>();
+    multiManager = std::make_shared<MultiManager>();
 
     commands["ECHO"] = [this](std::vector<std::string>& respArr) { return this->Echo(respArr); };
     commands["SET"] = [this](std::vector<std::string>& respArr) { return this->Set(respArr); };
@@ -206,6 +208,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     std::string cmd = respArr[0];
     std::string response = "";
     auto command = commands.find(cmd);
+    if(cmd == "MULTI" || multiManager->Contains(client_fd))
+    {
+        return Multi(respArr, client_fd);
+    }
     if(command != commands.end())
     {
         return command->second(respArr);
@@ -492,6 +498,20 @@ std::string Server::Incr(std::vector<std::string> &respArr)
         response = ":" + response + "\r\n";
     }
     return response;
+}
+
+std::string Server::Multi(std::vector<std::string>& respArr, int client_fd)
+{
+    if(respArr[0] == "MULTI")
+    {
+        multiManager->AddNewMulti(client_fd);
+        return "+OK\r\n";
+    }
+    else
+    {
+        multiManager->AddToMulti(client_fd, respArr);
+        return "+QUEUED\r\n";
+    }
 }
 
 void Server::HandleResponse(int client_fd, std::string response)

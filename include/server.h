@@ -5,8 +5,10 @@
 #include <memory>
 #include <functional>
 #include <map>
+#include <queue>
 
 class StorageEngine;
+class MultiManager;
 
 class Server {
 
@@ -57,6 +59,8 @@ public:
 
     std::string Incr(std::vector<std::string>& respArr);
 
+    std::string Multi(std::vector<std::string>& respArr, int client_fd);
+
 
     void HandleResponse(int client_fd, std::string response);
 
@@ -64,4 +68,6 @@ private:
     int server_fd;
     std::shared_ptr<StorageEngine> storageEngine;
     std::map<std::string, std::function<std::string(std::vector<std::string>&)>> commands;
+
+    std::shared_ptr<MultiManager> multiManager;
 };
