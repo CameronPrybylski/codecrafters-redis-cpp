@@ -403,10 +403,14 @@ std::string Server::XRange(std::vector<std::string> &respArr)
 
 std::string Server::XRead(std::vector<std::string> &respArr)
 {
+    if(respArr[1] == "block")
+    {
+        return XReadBlock(respArr);
+    }
     int numOfStreams = (respArr.size() - 2) / 2;
     int i = 2;
     std::string end = "<>";
-    std::string response = "*" + std::to_string(numOfStreams) + "\r\n";;
+    std::string response = "*" + std::to_string(numOfStreams) + "\r\n";
     for(int start = 0; start < numOfStreams; ++start)
     {
         std::string streamKey = respArr[i];
@@ -416,6 +420,30 @@ std::string Server::XRead(std::vector<std::string> &respArr)
         ++i;
     }
     return response;
+}
+
+std::string Server::XReadBlock(std::vector<std::string> &respArr)
+{
+    std::string streamKey = respArr[4];
+    std::string strStart = respArr[5];
+    std::string end = "<>";
+    std::string response = "*1\r\n";
+    auto start = std::chrono::system_clock::now();
+    auto now = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff(now - start);
+    int timeout = stoi(respArr[2]) / 1000;
+    std::chrono::duration<double> chrono_timeout(timeout);
+    while(diff < chrono_timeout)
+    {
+        std::map<std::string, std::vector<std::string>> entriesInRange = storageEngine->StreamEntriesInRange(streamKey, strStart, end);
+        if(!entriesInRange.empty()) {
+            response += ParseRangeEntries(entriesInRange, streamKey);
+            return response;
+        }
+        now = std::chrono::system_clock::now();
+        diff = now - start;
+    }
+    return "*-1\r\n";
 }
 
 std::string Server::ParseRangeEntries(std::map<std::string, std::vector<std::string>> &entriesInRange, std::string streamKey)
