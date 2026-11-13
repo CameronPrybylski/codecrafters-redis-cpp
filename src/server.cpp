@@ -562,6 +562,11 @@ std::string Server::Discard(int client_fd)
 
 std::string Server::Watch(std::vector<std::string> &respArr, int client_fd)
 {
+    if(multiManager->Contains(client_fd))
+    {
+        return "-ERR WATCH inside MULTI is not allowed\r\n";
+    }
+    watchedClients.insert(client_fd);
     return "+OK\r\n";
 }
 

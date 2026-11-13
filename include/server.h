@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <queue>
+#include <set>
 
 class StorageEngine;
 class MultiManager;
@@ -74,7 +75,7 @@ private:
     std::shared_ptr<StorageEngine> storageEngine;
     std::shared_ptr<MultiManager> multiManager;
 
-    //std::map<std::string
+    std::set<int> watchedClients;
 
     std::map<std::string, std::function<std::string(std::vector<std::string>&)>> commands;
 };
