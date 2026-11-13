@@ -63,6 +63,8 @@ public:
     std::string Exec(int client_fd);
     std::string Discard(int client_fd);
 
+    std::string Watch(std::vector<std::string>& respArr, int client_fd);
+
 
     void HandleResponse(int client_fd, std::string response);
 
@@ -71,6 +73,8 @@ private:
 
     std::shared_ptr<StorageEngine> storageEngine;
     std::shared_ptr<MultiManager> multiManager;
+
+    //std::map<std::string
 
     std::map<std::string, std::function<std::string(std::vector<std::string>&)>> commands;
 };

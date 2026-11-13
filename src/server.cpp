@@ -216,6 +216,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     {
         return Discard(client_fd);
     }
+    else if(cmd == "WATCH")
+    {
+        return Watch(respArr, client_fd);
+    }
     else if(cmd == "MULTI" || (multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
     {
         return Multi(respArr, client_fd);
@@ -554,6 +558,11 @@ std::string Server::Discard(int client_fd)
         return "+OK\r\n";
     }
     return "-ERR DISCARD without MULTI\r\n";
+}
+
+std::string Server::Watch(std::vector<std::string> &respArr, int client_fd)
+{
+    return "+OK\r\n";
 }
 
 void Server::HandleResponse(int client_fd, std::string response)
