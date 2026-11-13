@@ -212,6 +212,10 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     {
         return Exec(client_fd);
     }
+    else if(cmd == "DISCARD")
+    {
+        return Discard(client_fd);
+    }
     else if(cmd == "MULTI" || (multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
     {
         return Multi(respArr, client_fd);
@@ -540,6 +544,16 @@ std::string Server::Exec(int client_fd)
         response = "-ERR EXEC without MULTI\r\n";
     }
     return response;
+}
+
+std::string Server::Discard(int client_fd)
+{
+    if(multiManager->Contains(client_fd))
+    {
+        multiManager->Discard(client_fd);
+        return "+OK\r\n";
+    }
+    return "-ERR DISCARD without MULTI\r\n";
 }
 
 void Server::HandleResponse(int client_fd, std::string response)

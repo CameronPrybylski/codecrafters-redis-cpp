@@ -61,6 +61,7 @@ public:
 
     std::string Multi(std::vector<std::string>& respArr, int client_fd);
     std::string Exec(int client_fd);
+    std::string Discard(int client_fd);
 
 
     void HandleResponse(int client_fd, std::string response);

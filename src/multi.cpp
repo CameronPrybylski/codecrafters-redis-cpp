@@ -91,3 +91,11 @@ bool MultiManager::IsExecuting(int client_fd)
     }
     return false;
 }
+
+void MultiManager::Discard(int client_fd)
+{
+    if(multis.contains(client_fd))
+    {
+        multis.erase(client_fd);
+    }
+}

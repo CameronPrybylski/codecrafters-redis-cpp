@@ -42,6 +42,8 @@ public:
     std::vector<std::string> Execute(int client_fd);
     bool IsExecuting(int client_fd);
 
+    void Discard(int client_fd);
+
 private:
     std::map<int, std::shared_ptr<Multi>> multis;
 };
