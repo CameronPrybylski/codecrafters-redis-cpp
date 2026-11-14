@@ -1,7 +1,7 @@
 #include <multi.h>
 #include <iostream>
 
-Multi::Multi(int client_fd) : client_fd(client_fd), executing(false)
+Multi::Multi(int client_fd) : client_fd(client_fd), executing(false), oplk(false)
 {
 
 }
@@ -98,4 +98,21 @@ void MultiManager::Discard(int client_fd)
     {
         multis.erase(client_fd);
     }
+}
+
+void MultiManager::OPLK(int client_fd)
+{
+    if(multis.contains(client_fd))
+    {
+        multis[client_fd]->OPLK();
+    }
+}
+
+bool MultiManager::IsOPLK(int client_fd)
+{
+    if(multis.contains(client_fd))
+    {
+        return multis[client_fd]->IsOPLK();
+    }
+    return false;
 }

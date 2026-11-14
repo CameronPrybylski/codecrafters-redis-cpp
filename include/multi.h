@@ -18,12 +18,16 @@ public:
     bool IsExecuting(){return this->executing;}
     void SetExecuting(bool executing){this->executing = executing;}
 
+    void OPLK(){this->oplk = true;}
+    bool IsOPLK(){return this->oplk;}
+
     int Count(){return commands.size();}
 
 private:
     int client_fd;
     std::queue<std::vector<std::string>> commands;
     bool executing;
+    bool oplk;
 };
 
 class MultiManager {
@@ -43,6 +47,9 @@ public:
     bool IsExecuting(int client_fd);
 
     void Discard(int client_fd);
+
+    void OPLK(int client_fd);
+    bool IsOPLK(int client_fd);
 
 private:
     std::map<int, std::shared_ptr<Multi>> multis;

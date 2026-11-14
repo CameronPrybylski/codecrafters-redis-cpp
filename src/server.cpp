@@ -20,21 +20,21 @@ Server::Server()
     storageEngine = std::make_shared<StorageEngine>();
     multiManager = std::make_shared<MultiManager>();
 
-    commands["ECHO"] = [this](std::vector<std::string>& respArr) { return this->Echo(respArr); };
-    commands["SET"] = [this](std::vector<std::string>& respArr) { return this->Set(respArr); };
-    commands["GET"] = [this](std::vector<std::string>& respArr) { return this->Get(respArr); };
-    commands["RPUSH"] = [this](std::vector<std::string>& respArr) { return this->RPush(respArr); };
-    commands["LPUSH"] = [this](std::vector<std::string>& respArr) { return this->LPush(respArr); };
-    commands["LRANGE"] = [this](std::vector<std::string>& respArr) { return this->LRange(respArr); };
-    commands["LLEN"] = [this](std::vector<std::string>& respArr) { return this->LLen(respArr); };
-    commands["LPOP"] = [this](std::vector<std::string>& respArr) { return this->LPop(respArr); };
-    commands["BLPOP"] = [this](std::vector<std::string>& respArr) { return this->BLPop(respArr); };
-    commands["TYPE"] = [this](std::vector<std::string>& respArr) { return this->Type(respArr); };
-    commands["XADD"] = [this](std::vector<std::string>& respArr) { return this->XAdd(respArr); };
-    commands["XRANGE"] = [this](std::vector<std::string>& respArr) { return this->XRange(respArr); };
-    commands["XREAD"] = [this](std::vector<std::string>& respArr) { return this->XRead(respArr); };
+    commands["ECHO"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Echo(respArr, client_fd); };
+    commands["SET"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Set(respArr, client_fd); };
+    commands["GET"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Get(respArr, client_fd); };
+    commands["RPUSH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->RPush(respArr, client_fd); };
+    commands["LPUSH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->LPush(respArr, client_fd); };
+    commands["LRANGE"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->LRange(respArr, client_fd); };
+    commands["LLEN"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->LLen(respArr, client_fd); };
+    commands["LPOP"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->LPop(respArr, client_fd); };
+    commands["BLPOP"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->BLPop(respArr, client_fd); };
+    commands["TYPE"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Type(respArr, client_fd); };
+    commands["XADD"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->XAdd(respArr, client_fd); };
+    commands["XRANGE"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->XRange(respArr, client_fd); };
+    commands["XREAD"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->XRead(respArr, client_fd); };
 
-    commands["INCR"] = [this](std::vector<std::string>& respArr) { return this->Incr(respArr); };
+    commands["INCR"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Incr(respArr, client_fd); };
 
 }
 
@@ -226,21 +226,24 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     }
     else if(command != commands.end())
     {
-        return command->second(respArr);
+        return command->second(respArr, client_fd);
     }
     return "+PONG\r\n";
 }
 
-std::string Server::Echo(std::vector<std::string> &respArr)
+std::string Server::Echo(std::vector<std::string> &respArr, int client_fd)
 {
     return "$" + std::to_string(respArr[1].size()) + "\r\n" + respArr[1] + "\r\n";
 }
 
-std::string Server::Set(std::vector<std::string> &respArr)
+std::string Server::Set(std::vector<std::string> &respArr, int client_fd)
 {
     int time = 0;
     bool expires = false;
-
+    if(clientWatchingKeys.contains(respArr[1]) && clientWatchingKeys[respArr[1]] != client_fd)
+    {
+        multiManager->OPLK(clientWatchingKeys[respArr[1]]);
+    }
     if(respArr.size() > 3)
     {
         time = stoi(respArr[4]);
@@ -256,7 +259,7 @@ std::string Server::Set(std::vector<std::string> &respArr)
     return "+OK\r\n";
 }
 
-std::string Server::Get(std::vector<std::string> &respArr)
+std::string Server::Get(std::vector<std::string> &respArr, int client_fd)
 {
     std::string key = respArr[1];
     if(storageEngine->Contains(key) && !(storageEngine->CheckExpired(key)))
@@ -271,12 +274,12 @@ std::string Server::Get(std::vector<std::string> &respArr)
     }
 }
 
-std::string Server::RPush(std::vector<std::string> &respArr)
+std::string Server::RPush(std::vector<std::string> &respArr, int client_fd)
 {
    return Push(respArr, true);
 }
 
-std::string Server::LPush(std::vector<std::string> &respArr)
+std::string Server::LPush(std::vector<std::string> &respArr, int client_fd)
 {
     return Push(respArr, false);
 }
@@ -294,7 +297,7 @@ std::string Server::Push(std::vector<std::string> &respArr, bool right)
     return ":" + std::to_string(elementsInList) + "\r\n";
 }
 
-std::string Server::LRange(std::vector<std::string> &respArr)
+std::string Server::LRange(std::vector<std::string> &respArr, int client_fd)
 {
     std::string listKey = respArr[1];
     int start = stoi(respArr[2]);
@@ -310,29 +313,29 @@ std::string Server::LRange(std::vector<std::string> &respArr)
     return strResult;
 }
 
-std::string Server::LLen(std::vector<std::string> &respArr)
+std::string Server::LLen(std::vector<std::string> &respArr, int client_fd)
 {
     std::string listKey = respArr[1];
     int length = storageEngine->ElementsInList(listKey);
     return ":"  + std::to_string(length) + "\r\n";
 }
 
-std::string Server::LPop(std::vector<std::string> &respArr)
+std::string Server::LPop(std::vector<std::string> &respArr, int client_fd)
 {
     return Pop(respArr, false);
 }
 
-std::string Server::RPop(std::vector<std::string> &respArr)
+std::string Server::RPop(std::vector<std::string> &respArr, int client_fd)
 {
     return Pop(respArr, true);
 }
 
-std::string Server::BLPop(std::vector<std::string> &respArr)
+std::string Server::BLPop(std::vector<std::string> &respArr, int client_fd)
 {
     return BPop(respArr, false);
 }
 
-std::string Server::BRPop(std::vector<std::string> &respArr)
+std::string Server::BRPop(std::vector<std::string> &respArr, int client_fd)
 {
     return BPop(respArr, true);
 }
@@ -390,12 +393,12 @@ std::string Server::Pop(std::vector<std::string> &respArr, bool right)
     return result;
 }
 
-std::string Server::Type(std::vector<std::string> &respArr)
+std::string Server::Type(std::vector<std::string> &respArr, int client_fd)
 {
     return "+" + storageEngine->GetType(respArr[1]) + "\r\n";
 }
 
-std::string Server::XAdd(std::vector<std::string> &respArr)
+std::string Server::XAdd(std::vector<std::string> &respArr, int client_fd)
 {
     std::string streamKey = respArr[1];
     std::string entryID = respArr[2];
@@ -410,7 +413,7 @@ std::string Server::XAdd(std::vector<std::string> &respArr)
     return "$" + std::to_string(response.length()) + "\r\n" + response + "\r\n";
 }
 
-std::string Server::XRange(std::vector<std::string> &respArr)
+std::string Server::XRange(std::vector<std::string> &respArr, int client_fd)
 {
     std::string streamKey = respArr[1];
     std::string start = respArr[2];
@@ -421,7 +424,7 @@ std::string Server::XRange(std::vector<std::string> &respArr)
     return response;
 }
 
-std::string Server::XRead(std::vector<std::string> &respArr)
+std::string Server::XRead(std::vector<std::string> &respArr, int client_fd)
 {
     if(respArr[1] == "block")
     {
@@ -497,7 +500,7 @@ std::string Server::ParseRangeEntries(std::map<std::string, std::vector<std::str
     return response;
 }
 
-std::string Server::Incr(std::vector<std::string> &respArr)
+std::string Server::Incr(std::vector<std::string> &respArr, int client_fd)
 {
     std::string key = respArr[1];
     std::string response = storageEngine->IncrementKeyValue(key);
@@ -529,7 +532,7 @@ std::string Server::Multi(std::vector<std::string>& respArr, int client_fd)
 std::string Server::Exec(int client_fd)
 {
     std::string response = "";
-    if(multiManager->Contains(client_fd))
+    if(multiManager->Contains(client_fd) && !multiManager->IsOPLK(client_fd))
     {
         int multiCommandCount = multiManager->MultiCommandCount(client_fd);
         response = "*" + std::to_string(multiCommandCount) + "\r\n";
@@ -542,6 +545,11 @@ std::string Server::Exec(int client_fd)
             }
             response += HandleRespArr(respArr, client_fd);
         }
+    }
+    else if(multiManager->IsOPLK(client_fd))
+    {
+        multiManager->Discard(client_fd);
+        return "*-1\r\n";
     }
     else
     {
@@ -566,7 +574,7 @@ std::string Server::Watch(std::vector<std::string> &respArr, int client_fd)
     {
         return "-ERR WATCH inside MULTI is not allowed\r\n";
     }
-    watchedClients.insert(client_fd);
+    clientWatchingKeys[respArr[1]] = client_fd;
     return "+OK\r\n";
 }
 
