@@ -36,6 +36,10 @@ Server::Server()
 
     commands["INCR"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Incr(respArr, client_fd); };
 
+    commands["EXEC"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Exec(respArr, client_fd); };
+    commands["DISCARD"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Discard(respArr, client_fd); };
+    commands["WATCH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Watch(respArr, client_fd); };
+
 }
 
 bool Server::Create()
@@ -208,19 +212,8 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     std::string cmd = respArr[0];
     std::string response = "";
     auto command = commands.find(cmd);
-    if(cmd == "EXEC")
-    {
-        return Exec(client_fd);
-    }
-    else if(cmd == "DISCARD")
-    {
-        return Discard(client_fd);
-    }
-    else if(cmd == "WATCH")
-    {
-        return Watch(respArr, client_fd);
-    }
-    else if(cmd == "MULTI" || (multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
+    
+    if(cmd == "MULTI" || (cmd != "EXEC" && cmd != "DISCARD" && cmd != "WATCH" && multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
     {
         return Multi(respArr, client_fd);
     }
@@ -529,7 +522,7 @@ std::string Server::Multi(std::vector<std::string>& respArr, int client_fd)
     }
 }
 
-std::string Server::Exec(int client_fd)
+std::string Server::Exec(std::vector<std::string>& respArr, int client_fd)
 {
     std::string response = "";
     if(multiManager->Contains(client_fd) && !multiManager->IsOPLK(client_fd))
@@ -558,7 +551,7 @@ std::string Server::Exec(int client_fd)
     return response;
 }
 
-std::string Server::Discard(int client_fd)
+std::string Server::Discard(std::vector<std::string>& respArr, int client_fd)
 {
     if(multiManager->Contains(client_fd))
     {
@@ -574,7 +567,10 @@ std::string Server::Watch(std::vector<std::string> &respArr, int client_fd)
     {
         return "-ERR WATCH inside MULTI is not allowed\r\n";
     }
-    clientWatchingKeys[respArr[1]] = client_fd;
+    for(int i = 1; i < respArr.size(); ++i)
+    {
+        clientWatchingKeys[respArr[i]] = client_fd;
+    }
     return "+OK\r\n";
 }
 

@@ -60,8 +60,8 @@ public:
     std::string Incr(std::vector<std::string>& respArr, int client_fd);
 
     std::string Multi(std::vector<std::string>& respArr, int client_fd);
-    std::string Exec(int client_fd);
-    std::string Discard(int client_fd);
+    std::string Exec(std::vector<std::string>& respArr, int client_fd);
+    std::string Discard(std::vector<std::string>& respArr, int client_fd);
 
     std::string Watch(std::vector<std::string>& respArr, int client_fd);
 
