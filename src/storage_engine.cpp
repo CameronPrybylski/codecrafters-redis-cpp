@@ -361,3 +361,17 @@ std::string StorageEngine::IncrementKeyValue(std::string key)
     }
     return strValue;
 }
+
+int StorageEngine::Watching(std::string key)
+{
+    if(watchingKeys.contains(key))
+    {
+        return watchingKeys[key];
+    }
+    return 0;
+}
+
+void StorageEngine::AddWatchedKey(std::string key, int client_fd)
+{
+    watchingKeys[key] = client_fd;
+}

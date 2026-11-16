@@ -46,6 +46,10 @@ public:
 
     std::string IncrementKeyValue(std::string key);
 
+    bool BeingWatched(std::string key){return watchingKeys.contains(key);}
+    int Watching(std::string key);
+    void AddWatchedKey(std::string key, int client_fd);
+
 private:
     std::map<std::string, std::string> keyVals;
     std::map<std::string, int> keyExpires;
@@ -53,4 +57,6 @@ private:
 
     std::map<std::string, std::deque<std::string>> keyLists;
     std::map<std::string, Stream> streams;
+
+    std::map<std::string, int> watchingKeys;
 };

@@ -233,9 +233,9 @@ std::string Server::Set(std::vector<std::string> &respArr, int client_fd)
 {
     int time = 0;
     bool expires = false;
-    if(clientWatchingKeys.contains(respArr[1]) && clientWatchingKeys[respArr[1]] != client_fd)
+    if(storageEngine->BeingWatched(respArr[1]) && storageEngine->Watching(respArr[1]) != client_fd)
     {
-        multiManager->OPLK(clientWatchingKeys[respArr[1]]);
+        multiManager->OPLK(storageEngine->Watching(respArr[1]));
     }
     if(respArr.size() > 3)
     {
@@ -569,7 +569,7 @@ std::string Server::Watch(std::vector<std::string> &respArr, int client_fd)
     }
     for(int i = 1; i < respArr.size(); ++i)
     {
-        clientWatchingKeys[respArr[i]] = client_fd;
+        storageEngine->AddWatchedKey(respArr[i], client_fd);
     }
     return "+OK\r\n";
 }
