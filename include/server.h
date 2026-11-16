@@ -15,10 +15,14 @@ class Server {
 public:
     Server();
 
+    void SetPort(int port) {this->port = port;}
+
     bool Create();
     bool Bind();
     bool ListenForConnections();
     int AcceptClient();
+
+
 
     void Run();
     void Close();
@@ -71,6 +75,7 @@ public:
 
 private:
     int server_fd;
+    int port;
 
     std::shared_ptr<StorageEngine> storageEngine;
     std::shared_ptr<MultiManager> multiManager;

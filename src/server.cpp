@@ -15,7 +15,7 @@
 #include <algorithm>
 
 
-Server::Server()
+Server::Server() : port(6379)
 {
     storageEngine = std::make_shared<StorageEngine>();
     multiManager = std::make_shared<MultiManager>();
@@ -63,7 +63,8 @@ bool Server::Bind()
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(6379);
+    //server_addr.sin_port = htons(6379);
+    server_addr.sin_port = htons(this->port);
 
     if (bind(server_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) != 0) {
         std::cerr << "Failed to bind to port 6379\n";
