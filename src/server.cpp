@@ -41,6 +41,8 @@ Server::Server() : port(6379)
     commands["WATCH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Watch(respArr, client_fd); };
     commands["UNWATCH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Unwatch(respArr, client_fd); };
 
+    commands["INFO"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Info(respArr, client_fd); };
+
 }
 
 bool Server::Create()
@@ -580,6 +582,20 @@ std::string Server::Unwatch(std::vector<std::string> &respArr, int client_fd)
 {
     storageEngine->Unwatch();
     return "+OK\r\n";
+}
+
+std::string Server::Info(std::vector<std::string> &respArr, int client_fd)
+{
+    information["role"] = "master";
+    std::map<std::string, std::string>::iterator info = information.begin();
+
+    std::string infoOut = "";
+    for(; info != information.end(); ++info)
+    {
+        infoOut += "$" + std::to_string(info->first.length() + info->second.length() + 1) + "\r\n";
+        infoOut += info->first + ":" + info->second + "\r\n";
+    }
+    return infoOut;
 }
 
 void Server::HandleResponse(int client_fd, std::string response)

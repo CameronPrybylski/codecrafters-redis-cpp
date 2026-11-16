@@ -70,6 +70,8 @@ public:
     std::string Watch(std::vector<std::string>& respArr, int client_fd);
     std::string Unwatch(std::vector<std::string>& respArr, int client_fd);
 
+    std::string Info(std::vector<std::string>& respArr, int client_fd);
+
 
     void HandleResponse(int client_fd, std::string response);
 
@@ -83,4 +85,6 @@ private:
     std::map<std::string, int> clientWatchingKeys;
 
     std::map<std::string, std::function<std::string(std::vector<std::string>&, int)>> commands;
+
+    std::map<std::string, std::string> information;
 };
