@@ -64,6 +64,7 @@ public:
     std::string Discard(std::vector<std::string>& respArr, int client_fd);
 
     std::string Watch(std::vector<std::string>& respArr, int client_fd);
+    std::string Unwatch(std::vector<std::string>& respArr, int client_fd);
 
 
     void HandleResponse(int client_fd, std::string response);

@@ -375,3 +375,8 @@ void StorageEngine::AddWatchedKey(std::string key, int client_fd)
 {
     watchingKeys[key] = client_fd;
 }
+
+void StorageEngine::Unwatch()
+{
+    watchingKeys.clear();
+}

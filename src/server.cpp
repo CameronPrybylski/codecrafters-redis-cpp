@@ -39,6 +39,7 @@ Server::Server()
     commands["EXEC"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Exec(respArr, client_fd); };
     commands["DISCARD"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Discard(respArr, client_fd); };
     commands["WATCH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Watch(respArr, client_fd); };
+    commands["UNWATCH"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Unwatch(respArr, client_fd); };
 
 }
 
@@ -213,7 +214,7 @@ std::string Server::HandleRespArr(std::vector<std::string>& respArr, int client_
     std::string response = "";
     auto command = commands.find(cmd);
     
-    if(cmd == "MULTI" || (cmd != "EXEC" && cmd != "DISCARD" && cmd != "WATCH" && multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
+    if(cmd == "MULTI" || (cmd != "EXEC" && cmd != "DISCARD" && cmd != "WATCH" && cmd != "UNWATCH" && multiManager->Contains(client_fd) && !multiManager->IsExecuting(client_fd)))
     {
         return Multi(respArr, client_fd);
     }
@@ -571,6 +572,12 @@ std::string Server::Watch(std::vector<std::string> &respArr, int client_fd)
     {
         storageEngine->AddWatchedKey(respArr[i], client_fd);
     }
+    return "+OK\r\n";
+}
+
+std::string Server::Unwatch(std::vector<std::string> &respArr, int client_fd)
+{
+    storageEngine->Unwatch();
     return "+OK\r\n";
 }
 

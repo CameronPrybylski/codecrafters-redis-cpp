@@ -49,6 +49,7 @@ public:
     bool BeingWatched(std::string key){return watchingKeys.contains(key);}
     int Watching(std::string key);
     void AddWatchedKey(std::string key, int client_fd);
+    void Unwatch();
 
 private:
     std::map<std::string, std::string> keyVals;
