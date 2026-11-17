@@ -15,7 +15,7 @@
 #include <algorithm>
 
 
-Server::Server() : port(6379)
+Server::Server() : port(6379), replicant(false)
 {
     storageEngine = std::make_shared<StorageEngine>();
     multiManager = std::make_shared<MultiManager>();
@@ -43,6 +43,12 @@ Server::Server() : port(6379)
 
     commands["INFO"] = [this](std::vector<std::string>& respArr, int client_fd) { return this->Info(respArr, client_fd); };
 
+}
+
+void Server::SetPort(int port)
+{
+    this->port = port;
+    replicant = true;
 }
 
 bool Server::Create()
@@ -586,7 +592,12 @@ std::string Server::Unwatch(std::vector<std::string> &respArr, int client_fd)
 
 std::string Server::Info(std::vector<std::string> &respArr, int client_fd)
 {
-    information["role"] = "master";
+    std::string role = "master";
+    if(replicant)
+    {
+        role = "slave";
+    }
+    information["role"] = role;
     std::map<std::string, std::string>::iterator info = information.begin();
 
     std::string infoOut = "";

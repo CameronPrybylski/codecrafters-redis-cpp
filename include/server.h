@@ -15,7 +15,7 @@ class Server {
 public:
     Server();
 
-    void SetPort(int port) {this->port = port;}
+    void SetPort(int port);
 
     bool Create();
     bool Bind();
@@ -78,6 +78,7 @@ public:
 private:
     int server_fd;
     int port;
+    bool replicant;
 
     std::shared_ptr<StorageEngine> storageEngine;
     std::shared_ptr<MultiManager> multiManager;
