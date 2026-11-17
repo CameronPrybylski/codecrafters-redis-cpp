@@ -597,15 +597,21 @@ std::string Server::Info(std::vector<std::string> &respArr, int client_fd)
     {
         role = "slave";
     }
+    else
+    {
+        information["master_repl_offset"] = "0";
+        information["master_replid"] = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";
+    }
+
     information["role"] = role;
-    std::map<std::string, std::string>::iterator info = information.begin();
+    std::unordered_map<std::string, std::string>::iterator info = information.begin();
 
     std::string infoOut = "";
     for(; info != information.end(); ++info)
     {
-        infoOut += "$" + std::to_string(info->first.length() + info->second.length() + 1) + "\r\n";
         infoOut += info->first + ":" + info->second + "\r\n";
     }
+    infoOut = "$" + std::to_string(infoOut.length()) + "\r\n" + infoOut + "\r\n";
     return infoOut;
 }
 

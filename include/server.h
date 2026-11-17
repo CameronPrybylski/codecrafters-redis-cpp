@@ -87,5 +87,5 @@ private:
 
     std::map<std::string, std::function<std::string(std::vector<std::string>&, int)>> commands;
 
-    std::map<std::string, std::string> information;
+    std::unordered_map<std::string, std::string> information;
 };
